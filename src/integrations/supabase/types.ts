@@ -14,7 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      support_requests: {
+        Row: {
+          created_at: string
+          description: string
+          equipment_info: string | null
+          id: string
+          location: string
+          priority: Database["public"]["Enums"]["support_priority"]
+          request_type: Database["public"]["Enums"]["support_type"]
+          requester_email: string | null
+          requester_name: string
+          requester_phone: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["support_status"]
+          tracking_code: string
+          ubs_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          equipment_info?: string | null
+          id?: string
+          location: string
+          priority?: Database["public"]["Enums"]["support_priority"]
+          request_type?: Database["public"]["Enums"]["support_type"]
+          requester_email?: string | null
+          requester_name: string
+          requester_phone?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["support_status"]
+          tracking_code: string
+          ubs_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          equipment_info?: string | null
+          id?: string
+          location?: string
+          priority?: Database["public"]["Enums"]["support_priority"]
+          request_type?: Database["public"]["Enums"]["support_type"]
+          requester_email?: string | null
+          requester_name?: string
+          requester_phone?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["support_status"]
+          tracking_code?: string
+          ubs_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +79,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      support_priority: "baixa" | "media" | "alta" | "urgente"
+      support_status: "recebido" | "em_andamento" | "resolvido" | "cancelado"
+      support_type: "hardware" | "software" | "rede" | "impressora" | "outros"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +208,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      support_priority: ["baixa", "media", "alta", "urgente"],
+      support_status: ["recebido", "em_andamento", "resolvido", "cancelado"],
+      support_type: ["hardware", "software", "rede", "impressora", "outros"],
+    },
   },
 } as const
