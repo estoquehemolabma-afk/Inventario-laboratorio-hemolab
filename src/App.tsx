@@ -9,6 +9,9 @@ import UBSDetail from "./pages/UBSDetail";
 import UnidadesPage from "./pages/UnidadesPage";
 import EquipamentosPage from "./pages/EquipamentosPage";
 import RelatoriosPage from "./pages/RelatoriosPage";
+import SuportePage from "./pages/SuportePage";
+import SolicitarSuportePage from "./pages/SolicitarSuportePage";
+import AcompanharSuportePage from "./pages/AcompanharSuportePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +29,10 @@ const App = () => (
             <Route path="/unidades" element={<UnidadesPage />} />
             <Route path="/equipamentos" element={<EquipamentosPage />} />
             <Route path="/relatorios" element={<RelatoriosPage />} />
+            <Route path="/suporte" element={<SuportePage />} />
+            <Route path="/solicitar-suporte" element={<SolicitarSuportePage />} />
+            <Route path="/acompanhar-suporte/:trackingCode" element={<AcompanharSuportePage />} />
+            <Route path="/acompanhar-suporte" element={<AcompanharSuportePage />} />
             <Route path="/configuracoes" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

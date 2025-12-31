@@ -8,7 +8,8 @@ import {
   Settings,
   ChevronLeft,
   Menu,
-  Activity
+  Activity,
+  Headphones
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,7 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: Building2, label: 'Unidades (UBS)', path: '/unidades' },
   { icon: HardDrive, label: 'Equipamentos', path: '/equipamentos' },
+  { icon: Headphones, label: 'Suporte', path: '/suporte' },
   { icon: FileText, label: 'Relatórios', path: '/relatorios' },
   { icon: Settings, label: 'Configurações', path: '/configuracoes' },
 ];
