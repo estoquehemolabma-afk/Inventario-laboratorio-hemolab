@@ -16,6 +16,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { 
   SupportRequest, 
   SupportStatus,
+  SupportType,
+  SupportPriority,
   supportStatusLabels, 
   supportTypeLabels, 
   supportPriorityLabels,
@@ -34,6 +36,8 @@ const SuportePage: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<SupportRequest | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<SupportStatus>('recebido');
+  const [newPriority, setNewPriority] = useState<SupportPriority>('media');
+  const [newType, setNewType] = useState<SupportType>('outros');
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [updating, setUpdating] = useState(false);
 
@@ -66,6 +70,8 @@ const SuportePage: React.FC = () => {
   const openUpdateDialog = (request: SupportRequest) => {
     setSelectedRequest(request);
     setNewStatus(request.status);
+    setNewPriority(request.priority);
+    setNewType(request.request_type);
     setResolutionNotes(request.resolution_notes || '');
     setIsDialogOpen(true);
   };
@@ -78,6 +84,8 @@ const SuportePage: React.FC = () => {
         .from('support_requests')
         .update({
           status: newStatus,
+          priority: newPriority,
+          request_type: newType,
           resolution_notes: resolutionNotes || null,
         } as any)
         .eq('id', selectedRequest.id);
@@ -289,18 +297,48 @@ const SuportePage: React.FC = () => {
                 <p className="text-sm">{selectedRequest.description}</p>
               </div>
 
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={newStatus} onValueChange={(v) => setNewStatus(v as SupportStatus)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(supportStatusLabels).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={newStatus} onValueChange={(v) => setNewStatus(v as SupportStatus)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(supportStatusLabels).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Prioridade</Label>
+                  <Select value={newPriority} onValueChange={(v) => setNewPriority(v as SupportPriority)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(supportPriorityLabels).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Tipo</Label>
+                  <Select value={newType} onValueChange={(v) => setNewType(v as SupportType)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(supportTypeLabels).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-2">

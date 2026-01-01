@@ -12,15 +12,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { supportTypeLabels, supportPriorityLabels } from '@/types/support';
+import { ubsList } from '@/data/ubsList';
 
 const formSchema = z.object({
-  ubs_name: z.string().min(2, 'Nome da UBS é obrigatório').max(100),
+  ubs_name: z.string().min(1, 'Selecione a UBS'),
   requester_name: z.string().min(2, 'Nome é obrigatório').max(100),
   requester_email: z.string().email('Email inválido').optional().or(z.literal('')),
   requester_phone: z.string().max(20).optional().or(z.literal('')),
-  request_type: z.enum(['hardware', 'software', 'rede', 'impressora', 'outros']),
-  priority: z.enum(['baixa', 'media', 'alta', 'urgente']),
   location: z.string().min(2, 'Local é obrigatório').max(100),
   description: z.string().min(10, 'Descreva o problema com pelo menos 10 caracteres').max(1000),
   equipment_info: z.string().max(500).optional().or(z.literal('')),
@@ -40,8 +38,6 @@ const SolicitarSuportePage: React.FC = () => {
       requester_name: '',
       requester_email: '',
       requester_phone: '',
-      request_type: 'outros',
-      priority: 'media',
       location: '',
       description: '',
       equipment_info: '',
@@ -56,8 +52,6 @@ const SolicitarSuportePage: React.FC = () => {
         requester_name: data.requester_name,
         requester_email: data.requester_email || null,
         requester_phone: data.requester_phone || null,
-        request_type: data.request_type,
-        priority: data.priority,
         location: data.location,
         description: data.description,
         equipment_info: data.equipment_info || null,
@@ -215,9 +209,20 @@ const SolicitarSuportePage: React.FC = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Nome da UBS *</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Ex: UBS Centro" {...field} />
-                            </FormControl>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione a UBS" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="max-h-[300px]">
+                                {ubsList.map((ubs) => (
+                                  <SelectItem key={ubs} value={ubs}>
+                                    {ubs}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -287,56 +292,6 @@ const SolicitarSuportePage: React.FC = () => {
                   {/* Detalhes do Problema */}
                   <div className="space-y-4">
                     <h3 className="font-semibold text-foreground">Detalhes do Problema</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="request_type"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Tipo de Problema *</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione o tipo" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {Object.entries(supportTypeLabels).map(([value, label]) => (
-                                  <SelectItem key={value} value={value}>
-                                    {label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="priority"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Prioridade *</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione a prioridade" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {Object.entries(supportPriorityLabels).map(([value, label]) => (
-                                  <SelectItem key={value} value={value}>
-                                    {label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
 
                     <FormField
                       control={form.control}
