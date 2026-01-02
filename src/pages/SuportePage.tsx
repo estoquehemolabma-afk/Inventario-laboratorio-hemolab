@@ -80,17 +80,30 @@ const SuportePage: React.FC = () => {
     if (!selectedRequest) return;
     setUpdating(true);
     try {
-      const { error } = await supabase
+      console.log('Updating request:', selectedRequest.id, {
+        status: newStatus,
+        priority: newPriority,
+        request_type: newType,
+      });
+
+      const { data, error } = await supabase
         .from('support_requests')
         .update({
           status: newStatus,
           priority: newPriority,
           request_type: newType,
           resolution_notes: resolutionNotes || null,
-        } as any)
-        .eq('id', selectedRequest.id);
+        })
+        .eq('id', selectedRequest.id)
+        .select();
+
+      console.log('Update result:', { data, error });
 
       if (error) throw error;
+
+      if (!data || data.length === 0) {
+        throw new Error('Nenhum registro foi atualizado');
+      }
 
       toast({ title: 'Solicitação atualizada!' });
       setIsDialogOpen(false);
@@ -99,7 +112,7 @@ const SuportePage: React.FC = () => {
       console.error('Error updating request:', error);
       toast({
         title: 'Erro ao atualizar',
-        description: 'Não foi possível atualizar a solicitação.',
+        description: error instanceof Error ? error.message : 'Não foi possível atualizar a solicitação.',
         variant: 'destructive',
       });
     } finally {
