@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          phone: string | null
+          ubs_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          phone?: string | null
+          ubs_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          ubs_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       support_requests: {
         Row: {
           created_at: string
