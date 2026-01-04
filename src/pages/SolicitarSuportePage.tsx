@@ -209,10 +209,12 @@ const SolicitarSuportePage: React.FC = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Nome da UBS *</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione a UBS" />
-                              </SelectTrigger>
+                            <Select onValueChange={field.onChange} value={field.value || undefined}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione a UBS" />
+                                </SelectTrigger>
+                              </FormControl>
                               <SelectContent className="max-h-[300px]">
                                 {ubsList.map((ubs) => (
                                   <SelectItem key={ubs} value={ubs}>
