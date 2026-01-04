@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Activity, Send, CheckCircle, Copy, ExternalLink } from 'lucide-react';
+import { Activity, Send, CheckCircle, Copy, ExternalLink, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,12 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ubsList } from '@/data/ubsList';
+import { useAuth } from '@/contexts/AuthContext';
 
 const formSchema = z.object({
   ubs_name: z.string().min(1, 'Selecione a UBS'),
-  requester_name: z.string().min(2, 'Nome é obrigatório').max(100),
-  requester_email: z.string().email('Email inválido').optional().or(z.literal('')),
-  requester_phone: z.string().max(20).optional().or(z.literal('')),
   location: z.string().min(2, 'Local é obrigatório').max(100),
   description: z.string().min(10, 'Descreva o problema com pelo menos 10 caracteres').max(1000),
   equipment_info: z.string().max(500).optional().or(z.literal('')),
@@ -27,31 +26,45 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const SolicitarSuportePage: React.FC = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, profile, loading: authLoading, signOut } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      ubs_name: '',
-      requester_name: '',
-      requester_email: '',
-      requester_phone: '',
+      ubs_name: profile?.ubs_name || '',
       location: '',
       description: '',
       equipment_info: '',
     },
   });
 
+  // Update default UBS when profile loads
+  useEffect(() => {
+    if (profile?.ubs_name) {
+      form.setValue('ubs_name', profile.ubs_name);
+    }
+  }, [profile, form]);
+
   const onSubmit = async (data: FormData) => {
+    if (!profile) return;
+    
     setIsSubmitting(true);
     try {
       const insertData = {
         ubs_name: data.ubs_name,
-        requester_name: data.requester_name,
-        requester_email: data.requester_email || null,
-        requester_phone: data.requester_phone || null,
+        requester_name: profile.full_name,
+        requester_email: profile.email,
+        requester_phone: profile.phone,
         location: data.location,
         description: data.description,
         equipment_info: data.equipment_info || null,
@@ -97,6 +110,23 @@ const SolicitarSuportePage: React.FC = () => {
       toast({ title: 'Link copiado!' });
     }
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!user || !profile) {
+    return null;
+  }
 
   if (submittedCode) {
     return (
@@ -148,7 +178,12 @@ const SolicitarSuportePage: React.FC = () => {
                   className="flex-1"
                   onClick={() => {
                     setSubmittedCode(null);
-                    form.reset();
+                    form.reset({
+                      ubs_name: profile?.ubs_name || '',
+                      location: '',
+                      description: '',
+                      equipment_info: '',
+                    });
                   }}
                 >
                   Nova Solicitação
@@ -172,13 +207,25 @@ const SolicitarSuportePage: React.FC = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-            <Activity className="w-6 h-6 text-white" />
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+              <Activity className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="font-display font-bold text-lg">TI Saúde</h1>
+              <p className="text-xs text-muted-foreground">Solicitação de Suporte</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-display font-bold text-lg">TI Saúde</h1>
-            <p className="text-xs text-muted-foreground">Solicitação de Suporte</p>
+          
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <User className="w-4 h-4 text-muted-foreground" />
+              <span className="hidden sm:inline">{profile.full_name}</span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </header>
@@ -193,7 +240,8 @@ const SolicitarSuportePage: React.FC = () => {
             <CardHeader>
               <CardTitle>Nova Solicitação de Suporte</CardTitle>
               <CardDescription>
-                Preencha o formulário abaixo para solicitar suporte técnico. Após o envio, você receberá um código para acompanhar o status da sua solicitação.
+                Preencha o formulário abaixo para solicitar suporte técnico. 
+                Solicitante: <strong>{profile.full_name}</strong> ({profile.email})
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -209,7 +257,10 @@ const SolicitarSuportePage: React.FC = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Nome da UBS *</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value || undefined}>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              value={field.value || undefined}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Selecione a UBS" />
@@ -235,52 +286,6 @@ const SolicitarSuportePage: React.FC = () => {
                             <FormLabel>Local/Setor *</FormLabel>
                             <FormControl>
                               <Input placeholder="Ex: Recepção, Consultório 1" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Informações do Solicitante */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-foreground">Informações do Solicitante</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="requester_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome *</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Seu nome completo" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="requester_email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input type="email" placeholder="seu@email.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="requester_phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Telefone</FormLabel>
-                            <FormControl>
-                              <Input placeholder="(00) 00000-0000" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
