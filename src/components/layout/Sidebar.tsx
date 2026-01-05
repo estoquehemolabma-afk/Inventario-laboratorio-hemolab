@@ -9,7 +9,8 @@ import {
   ChevronLeft,
   Menu,
   Activity,
-  Headphones
+  Headphones,
+  BarChart3
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -24,7 +25,8 @@ const navItems = [
   { icon: Building2, label: 'Unidades (UBS)', path: '/unidades' },
   { icon: HardDrive, label: 'Equipamentos', path: '/equipamentos' },
   { icon: Headphones, label: 'Suporte', path: '/suporte' },
-  { icon: FileText, label: 'Relatórios', path: '/relatorios' },
+  { icon: BarChart3, label: 'Relatórios Suporte', path: '/relatorios-suporte' },
+  { icon: FileText, label: 'Relatórios Inventário', path: '/relatorios' },
   { icon: Settings, label: 'Configurações', path: '/configuracoes' },
 ];
 
