@@ -8,7 +8,7 @@ interface Profile {
   full_name: string;
   email: string | null;
   phone: string | null;
-  ubs_name: string | null;
+  ubs_name: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -19,7 +19,7 @@ interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string, phone?: string, ubsName?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, phone?: string, ubsNames?: string[]) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<Profile>) => Promise<{ error: Error | null }>;
 }
@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error: error as Error | null };
   };
 
-const signUp = async (email: string, password: string, fullName: string, phone?: string, ubsName?: string) => {
+  const signUp = async (email: string, password: string, fullName: string, phone?: string, ubsNames?: string[]) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -96,7 +96,7 @@ const signUp = async (email: string, password: string, fullName: string, phone?:
         data: {
           full_name: fullName,
           phone: phone || '',
-          ubs_name: ubsName || '',
+          ubs_name: ubsNames?.join('|||') || '',
         },
       },
     });
