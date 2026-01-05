@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity, Mail, Lock, User, Phone, ArrowLeft } from 'lucide-react';
+import { Activity, Mail, Lock, User, Phone, ArrowLeft, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import { ubsList } from '@/data/ubsList';
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ const AuthPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [ubsName, setUbsName] = useState('');
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -62,8 +65,17 @@ const AuthPage: React.FC = () => {
           });
           return;
         }
+
+        if (!ubsName) {
+          toast({
+            title: 'UBS obrigatória',
+            description: 'Selecione sua Unidade de Saúde.',
+            variant: 'destructive',
+          });
+          return;
+        }
         
-        const { error } = await signUp(email, password, fullName, phone);
+        const { error } = await signUp(email, password, fullName, phone, ubsName);
         if (error) {
           if (error.message.includes('already registered')) {
             toast({
@@ -160,6 +172,24 @@ const AuthPage: React.FC = () => {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                       />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ubs">Unidade de Saúde (UBS) *</Label>
+                    <div className="relative">
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                      <Select value={ubsName} onValueChange={setUbsName}>
+                        <SelectTrigger className="pl-10">
+                          <SelectValue placeholder="Selecione sua UBS" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ubsList.map((ubs) => (
+                            <SelectItem key={ubs} value={ubs}>
+                              {ubs}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </>
