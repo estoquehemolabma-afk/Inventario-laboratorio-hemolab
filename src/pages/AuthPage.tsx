@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity, Mail, Lock, User, Phone, ArrowLeft, Building2 } from 'lucide-react';
+import { Activity, Mail, Lock, User, Phone, ArrowLeft, Building2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -23,7 +24,7 @@ const AuthPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [ubsName, setUbsName] = useState('');
+  const [selectedUbs, setSelectedUbs] = useState<string[]>([]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -66,16 +67,16 @@ const AuthPage: React.FC = () => {
           return;
         }
 
-        if (!ubsName) {
+        if (selectedUbs.length === 0) {
           toast({
             title: 'UBS obrigatória',
-            description: 'Selecione sua Unidade de Saúde.',
+            description: 'Selecione pelo menos uma Unidade de Saúde.',
             variant: 'destructive',
           });
           return;
         }
         
-        const { error } = await signUp(email, password, fullName, phone, ubsName);
+        const { error } = await signUp(email, password, fullName, phone, selectedUbs);
         if (error) {
           if (error.message.includes('already registered')) {
             toast({
@@ -175,15 +176,22 @@ const AuthPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ubs">Unidade de Saúde (UBS) *</Label>
+                    <Label htmlFor="ubs">Unidades de Saúde (UBS) * <span className="text-xs text-muted-foreground">(pode selecionar várias)</span></Label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-                      <Select value={ubsName} onValueChange={setUbsName}>
+                      <Select 
+                        value="" 
+                        onValueChange={(value) => {
+                          if (!selectedUbs.includes(value)) {
+                            setSelectedUbs([...selectedUbs, value]);
+                          }
+                        }}
+                      >
                         <SelectTrigger className="pl-10">
-                          <SelectValue placeholder="Selecione sua UBS" />
+                          <SelectValue placeholder="Selecione uma UBS" />
                         </SelectTrigger>
                         <SelectContent>
-                          {ubsList.map((ubs) => (
+                          {ubsList.filter(ubs => !selectedUbs.includes(ubs)).map((ubs) => (
                             <SelectItem key={ubs} value={ubs}>
                               {ubs}
                             </SelectItem>
@@ -191,6 +199,26 @@ const AuthPage: React.FC = () => {
                         </SelectContent>
                       </Select>
                     </div>
+                    {selectedUbs.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {selectedUbs.map((ubs) => (
+                          <Badge 
+                            key={ubs} 
+                            variant="secondary" 
+                            className="flex items-center gap-1 text-xs"
+                          >
+                            {ubs.length > 30 ? ubs.substring(0, 27) + '...' : ubs}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedUbs(selectedUbs.filter(u => u !== ubs))}
+                              className="ml-1 hover:text-destructive"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </>
               )}

@@ -13,7 +13,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ubsList } from '@/data/ubsList';
 import { useAuth } from '@/contexts/AuthContext';
 
 const formSchema = z.object({
@@ -38,22 +37,24 @@ const SolicitarSuportePage: React.FC = () => {
     }
   }, [user, authLoading, navigate]);
 
+  const userUbsList = profile?.ubs_name || [];
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      ubs_name: profile?.ubs_name || '',
+      ubs_name: userUbsList.length === 1 ? userUbsList[0] : '',
       location: '',
       description: '',
       equipment_info: '',
     },
   });
 
-  // Update default UBS when profile loads
+  // Update default UBS when profile loads (if user has only one UBS)
   useEffect(() => {
-    if (profile?.ubs_name) {
-      form.setValue('ubs_name', profile.ubs_name);
+    if (userUbsList.length === 1) {
+      form.setValue('ubs_name', userUbsList[0]);
     }
-  }, [profile, form]);
+  }, [profile, form, userUbsList]);
 
   const onSubmit = async (data: FormData) => {
     if (!profile) return;
@@ -173,19 +174,19 @@ const SolicitarSuportePage: React.FC = () => {
               </div>
 
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    setSubmittedCode(null);
-                    form.reset({
-                      ubs_name: profile?.ubs_name || '',
-                      location: '',
-                      description: '',
-                      equipment_info: '',
-                    });
-                  }}
-                >
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setSubmittedCode(null);
+                      form.reset({
+                        ubs_name: userUbsList.length === 1 ? userUbsList[0] : '',
+                        location: '',
+                        description: '',
+                        equipment_info: '',
+                      });
+                    }}
+                  >
                   Nova Solicitação
                 </Button>
                 <Button
@@ -267,7 +268,7 @@ const SolicitarSuportePage: React.FC = () => {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent className="max-h-[300px]">
-                                {ubsList.map((ubs) => (
+                                {userUbsList.map((ubs) => (
                                   <SelectItem key={ubs} value={ubs}>
                                     {ubs}
                                   </SelectItem>
