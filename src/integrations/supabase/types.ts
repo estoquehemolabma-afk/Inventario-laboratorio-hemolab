@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      equipment: {
+        Row: {
+          brand: string | null
+          conservation_state: Database["public"]["Enums"]["conservation_state"]
+          created_at: string
+          id: string
+          installation_date: string | null
+          location: string
+          model: string | null
+          observations: string | null
+          patrimony_number: string | null
+          serial_number: string | null
+          type: Database["public"]["Enums"]["equipment_type"]
+          ubs_id: string
+          updated_at: string
+        }
+        Insert: {
+          brand?: string | null
+          conservation_state?: Database["public"]["Enums"]["conservation_state"]
+          created_at?: string
+          id?: string
+          installation_date?: string | null
+          location: string
+          model?: string | null
+          observations?: string | null
+          patrimony_number?: string | null
+          serial_number?: string | null
+          type: Database["public"]["Enums"]["equipment_type"]
+          ubs_id: string
+          updated_at?: string
+        }
+        Update: {
+          brand?: string | null
+          conservation_state?: Database["public"]["Enums"]["conservation_state"]
+          created_at?: string
+          id?: string
+          installation_date?: string | null
+          location?: string
+          model?: string | null
+          observations?: string | null
+          patrimony_number?: string | null
+          serial_number?: string | null
+          type?: Database["public"]["Enums"]["equipment_type"]
+          ubs_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_ubs_id_fkey"
+            columns: ["ubs_id"]
+            isOneToOne: false
+            referencedRelation: "ubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -104,6 +160,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ubs: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          responsible: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          responsible?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          responsible?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -112,6 +201,17 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      conservation_state: "Funcionando" | "Manutenção" | "Sucata"
+      equipment_type:
+        | "PC"
+        | "Impressora"
+        | "Monitor"
+        | "Estabilizador"
+        | "Scanner"
+        | "Notebook"
+        | "Roteador"
+        | "Switch"
+        | "Nobreak"
       support_priority: "baixa" | "media" | "alta" | "urgente"
       support_status: "recebido" | "em_andamento" | "resolvido" | "cancelado"
       support_type: "hardware" | "software" | "rede" | "impressora" | "outros"
@@ -242,6 +342,18 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      conservation_state: ["Funcionando", "Manutenção", "Sucata"],
+      equipment_type: [
+        "PC",
+        "Impressora",
+        "Monitor",
+        "Estabilizador",
+        "Scanner",
+        "Notebook",
+        "Roteador",
+        "Switch",
+        "Nobreak",
+      ],
       support_priority: ["baixa", "media", "alta", "urgente"],
       support_status: ["recebido", "em_andamento", "resolvido", "cancelado"],
       support_type: ["hardware", "software", "rede", "impressora", "outros"],
