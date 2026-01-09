@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { UBS, Equipment, UBSSummary, EquipmentSummary, EquipmentType } from '@/types/inventory';
-import { mockUBS, mockEquipment } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
 
 interface InventoryContextType {
   ubsList: UBS[];
@@ -10,21 +11,44 @@ interface InventoryContextType {
   getUBSSummary: (ubsId: string) => UBSSummary | null;
   getAllSummaries: () => UBSSummary[];
   getEquipmentByUBS: (ubsId: string) => Equipment[];
-  addUBS: (ubs: Omit<UBS, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateUBS: (id: string, ubs: Partial<UBS>) => void;
-  deleteUBS: (id: string) => void;
-  addEquipment: (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs'>) => void;
-  updateEquipment: (id: string, equipment: Partial<Equipment>) => void;
-  deleteEquipment: (id: string) => void;
+  addUBS: (ubs: Omit<UBS, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateUBS: (id: string, ubs: Partial<UBS>) => Promise<void>;
+  deleteUBS: (id: string) => Promise<void>;
+  addEquipment: (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs'>) => Promise<void>;
+  updateEquipment: (id: string, equipment: Partial<Equipment>) => Promise<void>;
+  deleteEquipment: (id: string) => Promise<void>;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  loading: boolean;
+  refreshData: () => Promise<void>;
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
-const STORAGE_KEYS = {
-  UBS: 'ubs-inventory-list',
-  EQUIPMENT: 'equipment-inventory-list',
+// Helper to map database equipment type to local type
+const mapEquipmentType = (type: string): EquipmentType => {
+  const typeMap: Record<string, EquipmentType> = {
+    'PC': 'PC',
+    'Impressora': 'Impressora',
+    'Monitor': 'Monitor',
+    'Estabilizador': 'Estabilizador',
+    'Scanner': 'Scanner',
+    'Notebook': 'Notebook',
+    'Roteador': 'Roteador',
+    'Switch': 'Switch',
+    'Nobreak': 'Nobreak',
+  };
+  return typeMap[type] || 'PC';
+};
+
+// Helper to map database conservation state to local type
+const mapConservationState = (state: string): 'Funcionando' | 'Manutenção' | 'Sucata' => {
+  const stateMap: Record<string, 'Funcionando' | 'Manutenção' | 'Sucata'> = {
+    'Funcionando': 'Funcionando',
+    'Manutenção': 'Manutenção',
+    'Sucata': 'Sucata',
+  };
+  return stateMap[state] || 'Funcionando';
 };
 
 export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -32,39 +56,78 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [equipmentList, setEquipmentList] = useState<Equipment[]>([]);
   const [selectedUBS, setSelectedUBS] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  // Load data from localStorage on mount
+  const fetchData = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Fetch UBS
+      const { data: ubsData, error: ubsError } = await supabase
+        .from('ubs')
+        .select('*')
+        .order('name');
+
+      if (ubsError) throw ubsError;
+
+      const mappedUBS: UBS[] = (ubsData || []).map((ubs) => ({
+        id: ubs.id,
+        name: ubs.name,
+        address: ubs.address || '',
+        responsible: ubs.responsible || '',
+        phone: ubs.phone || undefined,
+        email: ubs.email || undefined,
+        createdAt: ubs.created_at,
+        updatedAt: ubs.updated_at,
+      }));
+
+      setUBSList(mappedUBS);
+
+      // Fetch Equipment
+      const { data: equipmentData, error: equipmentError } = await supabase
+        .from('equipment')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (equipmentError) throw equipmentError;
+
+      const mappedEquipment: Equipment[] = (equipmentData || []).map((eq) => ({
+        id: eq.id,
+        ubsId: eq.ubs_id,
+        type: mapEquipmentType(eq.type),
+        brand: eq.brand || '',
+        model: eq.model || '',
+        serialNumber: eq.serial_number || '',
+        patrimonyNumber: eq.patrimony_number || '',
+        location: eq.location,
+        conservationState: mapConservationState(eq.conservation_state),
+        installationDate: eq.installation_date || '',
+        observations: eq.observations || '',
+        maintenanceLogs: [],
+        createdAt: eq.created_at,
+        updatedAt: eq.updated_at,
+      }));
+
+      setEquipmentList(mappedEquipment);
+    } catch (error) {
+      console.error('Error fetching inventory data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const storedUBS = localStorage.getItem(STORAGE_KEYS.UBS);
-    const storedEquipment = localStorage.getItem(STORAGE_KEYS.EQUIPMENT);
+    fetchData();
+  }, [user]);
 
-    if (storedUBS) {
-      setUBSList(JSON.parse(storedUBS));
-    } else {
-      setUBSList(mockUBS);
-      localStorage.setItem(STORAGE_KEYS.UBS, JSON.stringify(mockUBS));
-    }
-
-    if (storedEquipment) {
-      setEquipmentList(JSON.parse(storedEquipment));
-    } else {
-      setEquipmentList(mockEquipment);
-      localStorage.setItem(STORAGE_KEYS.EQUIPMENT, JSON.stringify(mockEquipment));
-    }
-  }, []);
-
-  // Save to localStorage on changes
-  useEffect(() => {
-    if (ubsList.length > 0) {
-      localStorage.setItem(STORAGE_KEYS.UBS, JSON.stringify(ubsList));
-    }
-  }, [ubsList]);
-
-  useEffect(() => {
-    if (equipmentList.length > 0) {
-      localStorage.setItem(STORAGE_KEYS.EQUIPMENT, JSON.stringify(equipmentList));
-    }
-  }, [equipmentList]);
+  const refreshData = async () => {
+    await fetchData();
+  };
 
   const getEquipmentByUBS = (ubsId: string): Equipment[] => {
     return equipmentList.filter((eq) => eq.ubsId === ubsId);
@@ -106,50 +169,79 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
       .filter((summary): summary is UBSSummary => summary !== null);
   };
 
-  const addUBS = (ubs: Omit<UBS, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newUBS: UBS = {
-      ...ubs,
-      id: `ubs-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setUBSList((prev) => [...prev, newUBS]);
+  const addUBS = async (ubs: Omit<UBS, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const { error } = await supabase.from('ubs').insert({
+      name: ubs.name,
+      address: ubs.address,
+      responsible: ubs.responsible,
+      phone: ubs.phone || null,
+      email: ubs.email || null,
+    });
+
+    if (error) throw error;
+    await refreshData();
   };
 
-  const updateUBS = (id: string, ubs: Partial<UBS>) => {
-    setUBSList((prev) =>
-      prev.map((u) =>
-        u.id === id ? { ...u, ...ubs, updatedAt: new Date().toISOString() } : u
-      )
-    );
+  const updateUBS = async (id: string, ubs: Partial<UBS>) => {
+    const { error } = await supabase.from('ubs').update({
+      name: ubs.name,
+      address: ubs.address,
+      responsible: ubs.responsible,
+      phone: ubs.phone || null,
+      email: ubs.email || null,
+    }).eq('id', id);
+
+    if (error) throw error;
+    await refreshData();
   };
 
-  const deleteUBS = (id: string) => {
-    setUBSList((prev) => prev.filter((u) => u.id !== id));
-    setEquipmentList((prev) => prev.filter((eq) => eq.ubsId !== id));
+  const deleteUBS = async (id: string) => {
+    const { error } = await supabase.from('ubs').delete().eq('id', id);
+    if (error) throw error;
+    await refreshData();
   };
 
-  const addEquipment = (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs'>) => {
-    const newEquipment: Equipment = {
-      ...equipment,
-      id: `equip-${Date.now()}`,
-      maintenanceLogs: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setEquipmentList((prev) => [...prev, newEquipment]);
+  const addEquipment = async (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs'>) => {
+    const { error } = await supabase.from('equipment').insert({
+      ubs_id: equipment.ubsId,
+      type: equipment.type,
+      brand: equipment.brand,
+      model: equipment.model,
+      serial_number: equipment.serialNumber,
+      patrimony_number: equipment.patrimonyNumber,
+      location: equipment.location,
+      conservation_state: equipment.conservationState,
+      installation_date: equipment.installationDate || null,
+      observations: equipment.observations,
+    });
+
+    if (error) throw error;
+    await refreshData();
   };
 
-  const updateEquipment = (id: string, equipment: Partial<Equipment>) => {
-    setEquipmentList((prev) =>
-      prev.map((eq) =>
-        eq.id === id ? { ...eq, ...equipment, updatedAt: new Date().toISOString() } : eq
-      )
-    );
+  const updateEquipment = async (id: string, equipment: Partial<Equipment>) => {
+    const updateData: Record<string, unknown> = {};
+    
+    if (equipment.ubsId !== undefined) updateData.ubs_id = equipment.ubsId;
+    if (equipment.type !== undefined) updateData.type = equipment.type;
+    if (equipment.brand !== undefined) updateData.brand = equipment.brand;
+    if (equipment.model !== undefined) updateData.model = equipment.model;
+    if (equipment.serialNumber !== undefined) updateData.serial_number = equipment.serialNumber;
+    if (equipment.patrimonyNumber !== undefined) updateData.patrimony_number = equipment.patrimonyNumber;
+    if (equipment.location !== undefined) updateData.location = equipment.location;
+    if (equipment.conservationState !== undefined) updateData.conservation_state = equipment.conservationState;
+    if (equipment.installationDate !== undefined) updateData.installation_date = equipment.installationDate || null;
+    if (equipment.observations !== undefined) updateData.observations = equipment.observations;
+
+    const { error } = await supabase.from('equipment').update(updateData).eq('id', id);
+    if (error) throw error;
+    await refreshData();
   };
 
-  const deleteEquipment = (id: string) => {
-    setEquipmentList((prev) => prev.filter((eq) => eq.id !== id));
+  const deleteEquipment = async (id: string) => {
+    const { error } = await supabase.from('equipment').delete().eq('id', id);
+    if (error) throw error;
+    await refreshData();
   };
 
   return (
@@ -170,6 +262,8 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         deleteEquipment,
         searchQuery,
         setSearchQuery,
+        loading,
+        refreshData,
       }}
     >
       {children}
