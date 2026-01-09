@@ -74,5 +74,5 @@ export const equipmentTypeLabels: Record<EquipmentType, string> = {
 export const conservationStateLabels: Record<ConservationState, string> = {
   Funcionando: 'Funcionando',
   Manutenção: 'Em Manutenção',
-  Sucata: 'Sucata',
+  Sucata: 'Inexistente',
 };
