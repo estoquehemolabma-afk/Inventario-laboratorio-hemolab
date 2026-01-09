@@ -36,11 +36,11 @@ const Dashboard: React.FC = () => {
     return true;
   });
 
-  // Calculate totals
-  const totalEquipment = equipmentList.length;
+  // Calculate totals (excluding "Inexistente" from total count)
   const operationalEquipment = equipmentList.filter(eq => eq.conservationState === 'Funcionando').length;
   const maintenanceEquipment = equipmentList.filter(eq => eq.conservationState === 'Manutenção').length;
-  const decommissionedEquipment = equipmentList.filter(eq => eq.conservationState === 'Sucata').length;
+  const deficitEquipment = equipmentList.filter(eq => eq.conservationState === 'Sucata').length;
+  const totalEquipment = operationalEquipment + maintenanceEquipment; // Não inclui déficit
 
   return (
     <MainLayout>
@@ -96,7 +96,7 @@ const Dashboard: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-destructive" />
-          <span className="text-sm text-muted-foreground">Sucata</span>
+          <span className="text-sm text-muted-foreground">Inexistente (Déficit)</span>
         </div>
       </motion.div>
 
