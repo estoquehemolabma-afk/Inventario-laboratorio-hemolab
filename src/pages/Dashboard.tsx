@@ -56,10 +56,10 @@ const Dashboard: React.FC = () => {
           delay={0}
         />
         <StatCard
-          title="Equipamentos"
-          value={totalEquipment}
-          icon={HardDrive}
-          variant="default"
+          title="Déficit"
+          value={deficitEquipment}
+          icon={XCircle}
+          variant="destructive"
           delay={0.1}
         />
         <StatCard
