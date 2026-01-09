@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { UBS, Equipment, UBSSummary, EquipmentSummary, EquipmentType } from '@/types/inventory';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './AuthContext';
 
 interface InventoryContextType {
   ubsList: UBS[];
@@ -57,14 +56,8 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [selectedUBS, setSelectedUBS] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
   const fetchData = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     try {
       // Fetch UBS
@@ -123,7 +116,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   useEffect(() => {
     fetchData();
-  }, [user]);
+  }, []);
 
   const refreshData = async () => {
     await fetchData();
