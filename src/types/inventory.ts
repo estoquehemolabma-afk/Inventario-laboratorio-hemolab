@@ -1,7 +1,7 @@
 // Equipment Types
 export type EquipmentType = 'PC' | 'Impressora' | 'Monitor' | 'Estabilizador' | 'Scanner' | 'Notebook' | 'Roteador' | 'Switch' | 'Nobreak';
 
-export type ConservationState = 'Funcionando' | 'Manutenção' | 'Sucata';
+export type ConservationState = 'Funcionando' | 'Manutenção' | 'Inexistente';
 
 export interface MaintenanceLog {
   id: string;
@@ -74,5 +74,5 @@ export const equipmentTypeLabels: Record<EquipmentType, string> = {
 export const conservationStateLabels: Record<ConservationState, string> = {
   Funcionando: 'Funcionando',
   Manutenção: 'Em Manutenção',
-  Sucata: 'Inexistente',
+  Inexistente: 'Inexistente',
 };

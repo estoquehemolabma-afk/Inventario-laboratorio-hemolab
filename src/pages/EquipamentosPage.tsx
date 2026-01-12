@@ -42,6 +42,14 @@ const EquipamentosPage: React.FC = () => {
   const [filterState, setFilterState] = useState<string>('all');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterUBS, filterState]);
+
   const filteredEquipment = equipmentList.filter((eq) => {
     if (filterUBS !== 'all' && eq.ubsId !== filterUBS) return false;
     if (filterState !== 'all' && eq.conservationState !== filterState) return false;
@@ -57,6 +65,10 @@ const EquipamentosPage: React.FC = () => {
     }
     return true;
   });
+
+  const totalPages = Math.ceil(filteredEquipment.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedEquipment = filteredEquipment.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const getUBSName = (ubsId: string) => {
     return ubsList.find((u) => u.id === ubsId)?.name || 'N/A';
@@ -124,7 +136,7 @@ const EquipamentosPage: React.FC = () => {
               <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="Funcionando">Funcionando</SelectItem>
               <SelectItem value="Manutenção">Manutenção</SelectItem>
-              <SelectItem value="Sucata">Sucata</SelectItem>
+              <SelectItem value="Inexistente">Inexistente</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -143,8 +155,8 @@ const EquipamentosPage: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEquipment.length > 0 ? (
-                filteredEquipment.map((eq) => {
+              {paginatedEquipment.length > 0 ? (
+                paginatedEquipment.map((eq) => {
                   const Icon = getEquipmentIcon(eq.type);
                   return (
                     <TableRow key={eq.id}>
@@ -196,6 +208,36 @@ const EquipamentosPage: React.FC = () => {
             </TableBody>
           </Table>
         </div>
+
+        {/* Pagination Footer */}
+        {filteredEquipment.length > 0 && (
+          <div className="p-4 border-t border-border flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              Mostrando {startIndex + 1} até {Math.min(startIndex + ITEMS_PER_PAGE, filteredEquipment.length)} de {filteredEquipment.length} resultados
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </Button>
+              <div className="text-sm font-medium">
+                Página {currentPage} de {totalPages}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Próxima
+              </Button>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

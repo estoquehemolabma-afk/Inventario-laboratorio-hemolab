@@ -5,57 +5,57 @@ import { UBS, Equipment, equipmentTypeLabels, conservationStateLabels } from '@/
 export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  
+
   // Header
   doc.setFillColor(30, 64, 124);
   doc.rect(0, 0, pageWidth, 40, 'F');
-  
+
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
   doc.text('INVENTÁRIO DE EQUIPAMENTOS DE TI', pageWidth / 2, 18, { align: 'center' });
-  
+
   doc.setFontSize(14);
   doc.setFont('helvetica', 'normal');
   doc.text('Levantamento Anual - ' + new Date().getFullYear(), pageWidth / 2, 28, { align: 'center' });
-  
+
   // UBS Info Box
   doc.setTextColor(0, 0, 0);
   doc.setFillColor(245, 247, 250);
   doc.rect(14, 48, pageWidth - 28, 35, 'F');
-  
+
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.text('Unidade de Saúde:', 20, 58);
   doc.setFont('helvetica', 'normal');
   doc.text(ubs.name, 65, 58);
-  
+
   doc.setFont('helvetica', 'bold');
   doc.text('Endereço:', 20, 66);
   doc.setFont('helvetica', 'normal');
   doc.text(ubs.address, 45, 66);
-  
+
   doc.setFont('helvetica', 'bold');
   doc.text('Responsável:', 20, 74);
   doc.setFont('helvetica', 'normal');
   doc.text(ubs.responsible, 52, 74);
-  
+
   doc.setFont('helvetica', 'bold');
   doc.text('Data do Levantamento:', 120, 74);
   doc.setFont('helvetica', 'normal');
   doc.text(new Date().toLocaleDateString('pt-BR'), 175, 74);
-  
+
   // Summary
   const operational = equipment.filter(e => e.conservationState === 'Funcionando').length;
   const maintenance = equipment.filter(e => e.conservationState === 'Manutenção').length;
-  const decommissioned = equipment.filter(e => e.conservationState === 'Sucata').length;
-  
+  const decommissioned = equipment.filter(e => e.conservationState === 'Inexistente').length;
+
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.text('RESUMO:', 14, 95);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Total: ${equipment.length}  |  Funcionando: ${operational}  |  Manutenção: ${maintenance}  |  Sucata: ${decommissioned}`, 35, 95);
-  
+  doc.text(`Total: ${equipment.length}  |  Funcionando: ${operational}  |  Manutenção: ${maintenance}  |  Inexistente: ${decommissioned}`, 35, 95);
+
   // Group equipment by location
   const equipmentByLocation = equipment.reduce((acc, eq) => {
     if (!acc[eq.location]) {
@@ -64,16 +64,16 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
     acc[eq.location].push(eq);
     return acc;
   }, {} as Record<string, Equipment[]>);
-  
+
   let currentY = 105;
-  
+
   Object.entries(equipmentByLocation).forEach(([location, items]) => {
     // Check if we need a new page
     if (currentY > 250) {
       doc.addPage();
       currentY = 20;
     }
-    
+
     // Location header
     doc.setFillColor(30, 64, 124);
     doc.rect(14, currentY - 5, pageWidth - 28, 8, 'F');
@@ -81,9 +81,9 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text(location.toUpperCase(), 18, currentY);
-    
+
     currentY += 8;
-    
+
     // Table
     const tableData = items.map(eq => [
       equipmentTypeLabels[eq.type],
@@ -93,7 +93,7 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
       eq.patrimonyNumber,
       conservationStateLabels[eq.conservationState],
     ]);
-    
+
     autoTable(doc, {
       startY: currentY,
       head: [['Tipo', 'Marca', 'Modelo', 'Nº Série', 'Patrimônio', 'Estado']],
@@ -122,30 +122,30 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
       },
       margin: { left: 14, right: 14 },
     });
-    
+
     currentY = (doc as any).lastAutoTable.finalY + 10;
   });
-  
+
   // Signature area
   if (currentY > 220) {
     doc.addPage();
     currentY = 40;
   }
-  
+
   currentY = Math.max(currentY, 240);
-  
+
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  
+
   doc.line(20, currentY, 90, currentY);
   doc.text('Responsável pela Conferência', 25, currentY + 5);
-  
+
   doc.line(120, currentY, 190, currentY);
   doc.text('Responsável pela Unidade', 130, currentY + 5);
-  
+
   doc.text(`Data: ____/____/________`, pageWidth / 2, currentY + 15, { align: 'center' });
-  
+
   // Footer
   const pageCount = doc.internal.pages.length - 1;
   for (let i = 1; i <= pageCount; i++) {
@@ -159,7 +159,7 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
       { align: 'center' }
     );
   }
-  
+
   // Download
   doc.save(`Inventario_${ubs.name.replace(/\s+/g, '_')}_${new Date().getFullYear()}.pdf`);
 };

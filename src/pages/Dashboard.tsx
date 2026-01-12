@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Building2, 
-  HardDrive, 
-  CheckCircle, 
-  AlertTriangle, 
+import {
+  Building2,
+  HardDrive,
+  CheckCircle,
+  AlertTriangle,
   XCircle,
   TrendingUp,
   Calendar
@@ -19,9 +19,9 @@ import { useInventory } from '@/contexts/InventoryContext';
 const Dashboard: React.FC = () => {
   const { getAllSummaries, ubsList, equipmentList, selectedUBS, searchQuery } = useInventory();
   const [showAddDialog, setShowAddDialog] = useState(false);
-  
+
   const summaries = getAllSummaries();
-  
+
   // Filter summaries based on selected UBS and search query
   const filteredSummaries = summaries.filter((summary) => {
     if (selectedUBS && summary.ubs.id !== selectedUBS) return false;
@@ -36,11 +36,11 @@ const Dashboard: React.FC = () => {
     return true;
   });
 
-  // Calculate totals (excluding "Inexistente" from total count)
-  const operationalEquipment = equipmentList.filter(eq => eq.conservationState === 'Funcionando').length;
-  const maintenanceEquipment = equipmentList.filter(eq => eq.conservationState === 'Manutenção').length;
-  const deficitEquipment = equipmentList.filter(eq => eq.conservationState === 'Sucata').length;
-  const totalEquipment = operationalEquipment + maintenanceEquipment; // Não inclui déficit
+  // Calculate totals from filtered summaries
+  const operationalEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.operational, 0);
+  const maintenanceEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.maintenance, 0);
+  const deficitEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.decommissioned, 0);
+  // const totalEquipment = operationalEquipment + maintenanceEquipment; // Unused variable
 
   return (
     <MainLayout>
@@ -50,7 +50,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           title="Total de Unidades"
-          value={ubsList.length}
+          value={filteredSummaries.length}
           icon={Building2}
           variant="default"
           delay={0}
@@ -79,7 +79,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Status Legend */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
@@ -109,7 +109,7 @@ const Dashboard: React.FC = () => {
         <h2 className="text-xl font-display font-bold text-foreground mb-4">
           Unidades de Saúde
         </h2>
-        
+
         {filteredSummaries.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredSummaries.map((summary, index) => (

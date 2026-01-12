@@ -110,7 +110,7 @@ const UBSDetail: React.FC = () => {
         <div className="bg-card rounded-2xl shadow-card overflow-hidden border border-border/50">
           <div className="gradient-primary p-6 text-white relative">
             <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-            
+
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 relative z-10">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -189,7 +189,7 @@ const UBSDetail: React.FC = () => {
               <p className="text-3xl font-display font-bold text-destructive">
                 {summary.equipmentByState.decommissioned}
               </p>
-              <p className="text-sm text-muted-foreground">Sucata</p>
+              <p className="text-sm text-muted-foreground">Inexistente</p>
             </div>
           </div>
         </div>

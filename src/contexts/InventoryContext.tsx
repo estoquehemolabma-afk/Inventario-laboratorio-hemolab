@@ -41,11 +41,11 @@ const mapEquipmentType = (type: string): EquipmentType => {
 };
 
 // Helper to map database conservation state to local type
-const mapConservationState = (state: string): 'Funcionando' | 'Manutenção' | 'Sucata' => {
-  const stateMap: Record<string, 'Funcionando' | 'Manutenção' | 'Sucata'> = {
+const mapConservationState = (state: string): 'Funcionando' | 'Manutenção' | 'Inexistente' => {
+  const stateMap: Record<string, 'Funcionando' | 'Manutenção' | 'Inexistente'> = {
     'Funcionando': 'Funcionando',
     'Manutenção': 'Manutenção',
-    'Sucata': 'Sucata',
+    'Sucata': 'Inexistente',
   };
   return stateMap[state] || 'Funcionando';
 };
@@ -140,7 +140,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         total: typeEquipment.length,
         operational: typeEquipment.filter((eq) => eq.conservationState === 'Funcionando').length,
         maintenance: typeEquipment.filter((eq) => eq.conservationState === 'Manutenção').length,
-        decommissioned: typeEquipment.filter((eq) => eq.conservationState === 'Sucata').length,
+        decommissioned: typeEquipment.filter((eq) => eq.conservationState === 'Inexistente').length,
       };
     }).filter((summary) => summary.total > 0);
 
@@ -151,7 +151,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
       equipmentByState: {
         operational: ubsEquipment.filter((eq) => eq.conservationState === 'Funcionando').length,
         maintenance: ubsEquipment.filter((eq) => eq.conservationState === 'Manutenção').length,
-        decommissioned: ubsEquipment.filter((eq) => eq.conservationState === 'Sucata').length,
+        decommissioned: ubsEquipment.filter((eq) => eq.conservationState === 'Inexistente').length,
       },
     };
   };
@@ -203,7 +203,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
       serial_number: equipment.serialNumber,
       patrimony_number: equipment.patrimonyNumber,
       location: equipment.location,
-      conservation_state: equipment.conservationState,
+      conservation_state: equipment.conservationState === 'Inexistente' ? 'Sucata' : equipment.conservationState,
       installation_date: equipment.installationDate || null,
       observations: equipment.observations,
     });
@@ -214,7 +214,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const updateEquipment = async (id: string, equipment: Partial<Equipment>) => {
     const updateData: Record<string, unknown> = {};
-    
+
     if (equipment.ubsId !== undefined) updateData.ubs_id = equipment.ubsId;
     if (equipment.type !== undefined) updateData.type = equipment.type;
     if (equipment.brand !== undefined) updateData.brand = equipment.brand;
@@ -222,7 +222,9 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     if (equipment.serialNumber !== undefined) updateData.serial_number = equipment.serialNumber;
     if (equipment.patrimonyNumber !== undefined) updateData.patrimony_number = equipment.patrimonyNumber;
     if (equipment.location !== undefined) updateData.location = equipment.location;
-    if (equipment.conservationState !== undefined) updateData.conservation_state = equipment.conservationState;
+    if (equipment.conservationState !== undefined) {
+      updateData.conservation_state = equipment.conservationState === 'Inexistente' ? 'Sucata' : equipment.conservationState;
+    }
     if (equipment.installationDate !== undefined) updateData.installation_date = equipment.installationDate || null;
     if (equipment.observations !== undefined) updateData.observations = equipment.observations;
 

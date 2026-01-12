@@ -39,7 +39,7 @@ const equipmentFormSchema = z.object({
   serialNumber: z.string().min(1, 'Número de série é obrigatório').max(50),
   patrimonyNumber: z.string().min(1, 'Patrimônio é obrigatório').max(50),
   location: z.string().min(1, 'Local é obrigatório').max(100),
-  conservationState: z.enum(['Funcionando', 'Manutenção', 'Sucata'] as const),
+  conservationState: z.enum(['Funcionando', 'Manutenção', 'Inexistente'] as const),
   installationDate: z.string().min(1, 'Data de instalação é obrigatória'),
   observations: z.string().max(500).optional(),
 });
@@ -54,7 +54,7 @@ interface EquipmentFormDialogProps {
 }
 
 const equipmentTypes: EquipmentType[] = ['PC', 'Impressora', 'Monitor', 'Estabilizador', 'Scanner', 'Notebook', 'Roteador', 'Switch', 'Nobreak'];
-const conservationStates: ConservationState[] = ['Funcionando', 'Manutenção', 'Sucata'];
+const conservationStates: ConservationState[] = ['Funcionando', 'Manutenção', 'Inexistente'];
 
 const commonLocations = [
   'Recepção',

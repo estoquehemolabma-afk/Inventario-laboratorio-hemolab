@@ -96,7 +96,7 @@ export const mockEquipment: Equipment[] = [
   generateEquipment('ubs-1', 'Impressora', 'Farmácia', 'Funcionando', 7),
   generateEquipment('ubs-1', 'Monitor', 'Recepção', 'Funcionando', 8),
   generateEquipment('ubs-1', 'Monitor', 'Triagem', 'Funcionando', 9),
-  generateEquipment('ubs-1', 'Estabilizador', 'Recepção', 'Sucata', 10),
+  generateEquipment('ubs-1', 'Estabilizador', 'Recepção', 'Inexistente', 10),
   generateEquipment('ubs-1', 'Scanner', 'Administração', 'Funcionando', 11),
   generateEquipment('ubs-1', 'Nobreak', 'Recepção', 'Funcionando', 12),
 
@@ -112,7 +112,7 @@ export const mockEquipment: Equipment[] = [
 
   // UBS Jardim Esperança - 10 equipment
   generateEquipment('ubs-3', 'PC', 'Recepção', 'Funcionando', 1),
-  generateEquipment('ubs-3', 'PC', 'Triagem', 'Sucata', 2),
+  generateEquipment('ubs-3', 'PC', 'Triagem', 'Inexistente', 2),
   generateEquipment('ubs-3', 'PC', 'Consultório 1', 'Funcionando', 3),
   generateEquipment('ubs-3', 'Impressora', 'Recepção', 'Funcionando', 4),
   generateEquipment('ubs-3', 'Impressora', 'Farmácia', 'Funcionando', 5),
