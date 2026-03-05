@@ -26,7 +26,7 @@ export type Database = {
           observations: string | null
           patrimony_number: string | null
           serial_number: string | null
-          type: Database["public"]["Enums"]["equipment_type"]
+          type: string
           ubs_id: string
           updated_at: string
         }
@@ -41,7 +41,7 @@ export type Database = {
           observations?: string | null
           patrimony_number?: string | null
           serial_number?: string | null
-          type: Database["public"]["Enums"]["equipment_type"]
+          type: string
           ubs_id: string
           updated_at?: string
         }
@@ -56,7 +56,7 @@ export type Database = {
           observations?: string | null
           patrimony_number?: string | null
           serial_number?: string | null
-          type?: Database["public"]["Enums"]["equipment_type"]
+          type?: string
           ubs_id?: string
           updated_at?: string
         }
@@ -69,6 +69,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      equipment_types: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -202,16 +220,6 @@ export type Database = {
     }
     Enums: {
       conservation_state: "Funcionando" | "Manutenção" | "Sucata"
-      equipment_type:
-        | "PC"
-        | "Impressora"
-        | "Monitor"
-        | "Estabilizador"
-        | "Scanner"
-        | "Notebook"
-        | "Roteador"
-        | "Switch"
-        | "Nobreak"
       support_priority: "baixa" | "media" | "alta" | "urgente"
       support_status: "recebido" | "em_andamento" | "resolvido" | "cancelado"
       support_type: "hardware" | "software" | "rede" | "impressora" | "outros"
@@ -343,17 +351,6 @@ export const Constants = {
   public: {
     Enums: {
       conservation_state: ["Funcionando", "Manutenção", "Sucata"],
-      equipment_type: [
-        "PC",
-        "Impressora",
-        "Monitor",
-        "Estabilizador",
-        "Scanner",
-        "Notebook",
-        "Roteador",
-        "Switch",
-        "Nobreak",
-      ],
       support_priority: ["baixa", "media", "alta", "urgente"],
       support_status: ["recebido", "em_andamento", "resolvido", "cancelado"],
       support_type: ["hardware", "software", "rede", "impressora", "outros"],
