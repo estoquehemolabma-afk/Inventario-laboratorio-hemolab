@@ -7,14 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  SupportRequest, 
+import {
+  SupportRequest,
   SupportStatus,
-  supportStatusLabels, 
-  supportTypeLabels, 
+  supportStatusLabels,
+  supportTypeLabels,
   supportPriorityLabels,
   supportStatusColors,
-  supportPriorityColors 
+  supportPriorityColors
 } from '@/types/support';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -193,24 +193,21 @@ const AcompanharSuportePage: React.FC = () => {
                             <motion.div
                               initial={{ scale: 0.8 }}
                               animate={{ scale: isCurrent ? 1.1 : 1 }}
-                              className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                                isCompleted
+                              className={`w-12 h-12 rounded-full flex items-center justify-center ${isCompleted
                                   ? 'bg-primary text-primary-foreground'
                                   : 'bg-muted text-muted-foreground'
-                              } ${isCurrent ? 'ring-4 ring-primary/30' : ''}`}
+                                } ${isCurrent ? 'ring-4 ring-primary/30' : ''}`}
                             >
                               <Icon className="w-6 h-6" />
                             </motion.div>
-                            <span className={`mt-2 text-sm font-medium ${
-                              isCompleted ? 'text-foreground' : 'text-muted-foreground'
-                            }`}>
+                            <span className={`mt-2 text-sm font-medium ${isCompleted ? 'text-foreground' : 'text-muted-foreground'
+                              }`}>
                               {step.label}
                             </span>
                           </div>
                           {index < statusSteps.length - 1 && (
-                            <div className={`flex-1 h-1 mx-4 rounded ${
-                              index < currentStepIndex ? 'bg-primary' : 'bg-muted'
-                            }`} />
+                            <div className={`flex-1 h-1 mx-4 rounded ${index < currentStepIndex ? 'bg-primary' : 'bg-muted'
+                              }`} />
                           )}
                         </React.Fragment>
                       );
@@ -228,7 +225,7 @@ const AcompanharSuportePage: React.FC = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">UBS</p>
+                    <p className="text-sm text-muted-foreground">Unidade</p>
                     <p className="font-medium">{request.ubs_name}</p>
                   </div>
                   <div>

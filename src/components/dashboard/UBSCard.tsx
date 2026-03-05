@@ -22,12 +22,12 @@ const UBSCard: React.FC<UBSCardProps> = ({ summary, index }) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}
       whileHover={{ y: -4 }}
       className="bg-card rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden border border-border/50 cursor-pointer group"
-      onClick={() => navigate(`/ubs/${ubs.id}`)}
+      onClick={() => navigate(`/unidade/${ubs.id}`)}
     >
       <div className="gradient-primary p-5 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-        
+
         <div className="flex items-start justify-between relative z-10">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -41,14 +41,14 @@ const UBSCard: React.FC<UBSCardProps> = ({ summary, index }) => {
               </div>
             </div>
           </div>
-          <motion.div 
+          <motion.div
             className="p-2 bg-white/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
             whileHover={{ scale: 1.1 }}
           >
             <ChevronRight className="w-5 h-5" />
           </motion.div>
         </div>
-        
+
         <div className="flex items-center gap-1.5 mt-3 text-sm text-white/80">
           <User className="w-3.5 h-3.5" />
           <span>{ubs.responsible}</span>

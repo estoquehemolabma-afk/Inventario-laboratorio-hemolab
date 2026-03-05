@@ -19,15 +19,19 @@ const formSchema = z.object({
   ubs_name: z.string().min(1, 'Selecione a unidade'),
   location: z.string().min(2, 'Local é obrigatório').max(100),
   description: z.string().min(10, 'Descreva o problema com pelo menos 10 caracteres').max(1000),
-  equipment_info: z.string().max(500).optional().or(z.literal('')),
+  equipment_info: z.string().optional().or(z.literal('')),
+  request_type: z.string().min(1, 'Selecione o tipo de problema'),
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+import { useInventory } from '@/contexts/InventoryContext';
 
 const SolicitarSuportePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, loading: authLoading, signOut } = useAuth();
+  const { getEquipmentByUBS, equipmentTypes } = useInventory();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
 
@@ -37,7 +41,7 @@ const SolicitarSuportePage: React.FC = () => {
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { ubs_name: userUbsList.length === 1 ? userUbsList[0] : '', location: '', description: '', equipment_info: '' },
+    defaultValues: { ubs_name: userUbsList.length === 1 ? userUbsList[0] : '', location: '', description: '', equipment_info: '', request_type: '' },
   });
 
   useEffect(() => { if (userUbsList.length === 1) form.setValue('ubs_name', userUbsList[0]); }, [profile, form, userUbsList]);
@@ -51,7 +55,11 @@ const SolicitarSuportePage: React.FC = () => {
         .insert({
           ubs_name: data.ubs_name, requester_name: profile.full_name,
           requester_email: profile.email, requester_phone: profile.phone,
-          location: data.location, description: data.description, equipment_info: data.equipment_info || null,
+          location: data.location, description: data.description,
+          equipment_info: data.equipment_info || null,
+          request_type: data.request_type,
+          status: 'recebido',
+          priority: 'media'
         } as any)
         .select('tracking_code').single();
       if (error) throw error;
@@ -170,9 +178,45 @@ const SolicitarSuportePage: React.FC = () => {
                   </div>
                   <div className="space-y-4">
                     <h3 className="font-semibold text-foreground">Detalhes do Problema</h3>
-                    <FormField control={form.control} name="equipment_info" render={({ field }) => (
-                      <FormItem><FormLabel>Informações do Equipamento</FormLabel><FormControl><Input placeholder="Ex: PC da recepção, Patrimônio 12345" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {form.watch('ubs_name') && (
+                        <FormField control={form.control} name="equipment_info" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Informações do Equipamento</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || undefined}>
+                              <FormControl><SelectTrigger><SelectValue placeholder="Opcional: Selecione um equipamento da unidade" /></SelectTrigger></FormControl>
+                              <SelectContent className="max-h-[300px]">
+                                {getEquipmentByUBS(userUbsList.find(u => u === form.watch('ubs_name')) || '').map((eq) => (
+                                  <SelectItem key={eq.id} value={`${eq.brand} ${eq.model} - PAT: ${eq.patrimonyNumber}`}>
+                                    {eq.type}: {eq.brand} {eq.model} (Pat: {eq.patrimonyNumber})
+                                  </SelectItem>
+                                ))}
+                                <SelectItem value="Outro (Não listado)">Outro (Não listado / Sem patrimônio)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      )}
+
+                      <FormField control={form.control} name="request_type" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tipo do Problema / Equipamento *</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value || undefined}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione o tipo de suporte" /></SelectTrigger></FormControl>
+                            <SelectContent className="max-h-[300px]">
+                              <SelectItem value="Sistema/Software">Sistema/Software</SelectItem>
+                              <SelectItem value="Rede/Internet">Rede/Internet</SelectItem>
+                              {equipmentTypes.map(type => (
+                                <SelectItem key={`type-${type}`} value={type}>{type}</SelectItem>
+                              ))}
+                              <SelectItem value="Outros">Outros</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
                     <FormField control={form.control} name="description" render={({ field }) => (
                       <FormItem><FormLabel>Descrição do Problema *</FormLabel><FormControl><Textarea placeholder="Descreva detalhadamente o problema..." className="min-h-[120px]" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />

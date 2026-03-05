@@ -12,23 +12,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useInventory } from '@/contexts/InventoryContext';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  SupportRequest, 
+import {
+  SupportRequest,
   SupportStatus,
   SupportType,
   SupportPriority,
-  supportStatusLabels, 
-  supportTypeLabels, 
+  supportStatusLabels,
   supportPriorityLabels,
   supportStatusColors,
-  supportPriorityColors 
+  supportPriorityColors
 } from '@/types/support';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const SuportePage: React.FC = () => {
   const { toast } = useToast();
+  const { equipmentTypes } = useInventory();
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,7 +38,7 @@ const SuportePage: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<SupportStatus>('recebido');
   const [newPriority, setNewPriority] = useState<SupportPriority>('media');
-  const [newType, setNewType] = useState<SupportType>('outros');
+  const [newType, setNewType] = useState<string>('outros');
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [updating, setUpdating] = useState(false);
 
@@ -91,7 +92,7 @@ const SuportePage: React.FC = () => {
         .update({
           status: newStatus,
           priority: newPriority,
-          request_type: newType,
+          request_type: newType as any,
           resolution_notes: resolutionNotes || null,
         })
         .eq('id', selectedRequest.id)
@@ -121,14 +122,14 @@ const SuportePage: React.FC = () => {
   };
 
   const filteredRequests = requests.filter(request => {
-    const matchesSearch = 
+    const matchesSearch =
       request.tracking_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.ubs_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.requester_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -205,7 +206,7 @@ const SuportePage: React.FC = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por código, UBS, solicitante..."
+              placeholder="Buscar por código, unidade, solicitante..."
               className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -225,8 +226,51 @@ const SuportePage: React.FC = () => {
           </Select>
         </div>
 
-        {/* Table */}
-        <Card className="border-border/50 bg-card/50">
+        {/* Table/Cards View */}
+        <div className="grid md:hidden grid-cols-1 gap-4">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+            </div>
+          ) : filteredRequests.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground bg-card rounded-lg border border-border/50">
+              Nenhuma solicitação encontrada
+            </div>
+          ) : (
+            filteredRequests.map(request => (
+              <Card key={request.id} className="border-border/50 bg-card/50">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-mono text-xs text-muted-foreground block">{request.tracking_code}</span>
+                      <strong className="text-sm block">{request.ubs_name}</strong>
+                    </div>
+                    <Badge className={supportStatusColors[request.status]}>
+                      {supportStatusLabels[request.status]}
+                    </Badge>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Requisitante:</span> {request.requester_name}
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Tipo:</span> {request.request_type}
+                  </div>
+                  <div className="flex justify-between items-end pt-2">
+                    <div className="text-xs text-muted-foreground">
+                      {format(new Date(request.created_at), 'dd/MM/yyyy HH:mm')}
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => openUpdateDialog(request)}>
+                      <MessageSquare className="w-4 h-4 mr-1" />
+                      Gerenciar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+
+        <Card className="hidden md:block border-border/50 bg-card/50">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
@@ -260,7 +304,7 @@ const SuportePage: React.FC = () => {
                       <TableCell className="font-mono text-sm">{request.tracking_code}</TableCell>
                       <TableCell>{request.ubs_name}</TableCell>
                       <TableCell>{request.requester_name}</TableCell>
-                      <TableCell>{supportTypeLabels[request.request_type]}</TableCell>
+                      <TableCell>{request.request_type}</TableCell>
                       <TableCell>
                         <Badge className={supportPriorityColors[request.priority]}>
                           {supportPriorityLabels[request.priority]}
@@ -341,14 +385,17 @@ const SuportePage: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label>Tipo</Label>
-                  <Select value={newType} onValueChange={(v) => setNewType(v as SupportType)}>
+                  <Select value={newType} onValueChange={(v) => setNewType(v)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(supportTypeLabels).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                    <SelectContent className="max-h-[300px]">
+                      <SelectItem value="Sistema/Software">Sistema/Software</SelectItem>
+                      <SelectItem value="Rede/Internet">Rede/Internet</SelectItem>
+                      {equipmentTypes.map(type => (
+                        <SelectItem key={`type-${type}`} value={type}>{type}</SelectItem>
                       ))}
+                      <SelectItem value="Outros">Outros</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

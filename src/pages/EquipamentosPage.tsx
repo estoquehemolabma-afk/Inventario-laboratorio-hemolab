@@ -14,6 +14,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const EquipamentosPage: React.FC = () => {
@@ -80,7 +81,57 @@ const EquipamentosPage: React.FC = () => {
           </Select>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View: Cards */}
+        <div className="grid md:hidden grid-cols-1 gap-4 p-4">
+          {paginatedEquipment.length > 0 ? (
+            paginatedEquipment.map((eq) => {
+              const Icon = getEquipmentIcon(eq.type);
+              return (
+                <Card key={eq.id} className="border-border/50 bg-card/50">
+                  <CardContent className="p-4 flex flex-col gap-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="p-1.5 bg-primary/10 rounded"><Icon className="w-4 h-4 text-primary" /></div>
+                        <span className="font-semibold text-sm">{getEquipmentTypeLabel(eq.type)}</span>
+                      </div>
+                      <Badge className={`${getStatusBgColor(eq.conservationState)} ${getStatusTextColor(eq.conservationState)} border-0 text-xs`}>
+                        {conservationStateLabels[eq.conservationState]}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-y-2 text-sm mt-1">
+                      <div className="col-span-2">
+                        <span className="text-muted-foreground font-medium block">Marca/Modelo</span>
+                        {eq.brand} <span className="text-xs text-muted-foreground">{eq.model}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground font-medium block">Patrimônio</span>
+                        <span className="font-mono text-xs">{eq.patrimonyNumber}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground font-medium block">Unidade / Local</span>
+                        <span className="text-xs truncate block">{getUBSName(eq.ubsId)} - {eq.location}</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-end pt-2 border-t border-border mt-2">
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(eq.id)} className="text-muted-foreground hover:text-destructive">
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Excluir
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          ) : (
+            <div className="text-center py-8 text-muted-foreground bg-card rounded-lg border border-border/50">
+              <HardDrive className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+              Nenhum equipamento encontrado
+            </div>
+          )}
+        </div>
+
+        <div className="hidden md:block overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

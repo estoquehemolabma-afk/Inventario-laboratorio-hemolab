@@ -11,13 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { ubsList } from '@/data/ubsList';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { signIn, signUp, user, loading: authLoading } = useAuth();
-  
+
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -26,11 +26,26 @@ const AuthPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [selectedUbs, setSelectedUbs] = useState<string[]>([]);
 
+  const [dynamicUbsList, setDynamicUbsList] = useState<string[]>([]);
+
   useEffect(() => {
     if (!authLoading && user) {
       navigate('/solicitar-suporte');
     }
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    // Only fetch UBS list if the user is on the signup form
+    if (!isLogin) {
+      const fetchUbs = async () => {
+        const { data } = await supabase.from('ubs').select('name').order('name');
+        if (data) {
+          setDynamicUbsList(data.map(u => u.name));
+        }
+      };
+      fetchUbs();
+    }
+  }, [isLogin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +90,7 @@ const AuthPage: React.FC = () => {
           });
           return;
         }
-        
+
         const { error } = await signUp(email, password, fullName, phone, selectedUbs);
         if (error) {
           if (error.message.includes('already registered')) {
@@ -93,7 +108,7 @@ const AuthPage: React.FC = () => {
           }
           return;
         }
-        toast({ 
+        toast({
           title: 'Cadastro realizado!',
           description: 'Você já pode solicitar suporte.',
         });
@@ -137,8 +152,8 @@ const AuthPage: React.FC = () => {
           <CardHeader>
             <CardTitle>{isLogin ? 'Entrar' : 'Criar Conta'}</CardTitle>
             <CardDescription>
-              {isLogin 
-                ? 'Acesse sua conta para solicitar suporte' 
+              {isLogin
+                ? 'Acesse sua conta para solicitar suporte'
                 : 'Cadastre-se para acessar o sistema'}
             </CardDescription>
           </CardHeader>
@@ -176,11 +191,11 @@ const AuthPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ubs">Unidades de Saúde (UBS) * <span className="text-xs text-muted-foreground">(pode selecionar várias)</span></Label>
+                    <Label htmlFor="ubs">Unidades * <span className="text-xs text-muted-foreground">(pode selecionar várias)</span></Label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-                      <Select 
-                        value="" 
+                      <Select
+                        value=""
                         onValueChange={(value) => {
                           if (!selectedUbs.includes(value)) {
                             setSelectedUbs([...selectedUbs, value]);
@@ -188,10 +203,10 @@ const AuthPage: React.FC = () => {
                         }}
                       >
                         <SelectTrigger className="pl-10">
-                          <SelectValue placeholder="Selecione uma UBS" />
+                          <SelectValue placeholder="Selecione uma unidade" />
                         </SelectTrigger>
                         <SelectContent>
-                          {ubsList.filter(ubs => !selectedUbs.includes(ubs)).map((ubs) => (
+                          {dynamicUbsList.filter(ubs => !selectedUbs.includes(ubs)).map((ubs) => (
                             <SelectItem key={ubs} value={ubs}>
                               {ubs}
                             </SelectItem>
@@ -202,9 +217,9 @@ const AuthPage: React.FC = () => {
                     {selectedUbs.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
                         {selectedUbs.map((ubs) => (
-                          <Badge 
-                            key={ubs} 
-                            variant="secondary" 
+                          <Badge
+                            key={ubs}
+                            variant="secondary"
                             className="flex items-center gap-1 text-xs"
                           >
                             {ubs.length > 30 ? ubs.substring(0, 27) + '...' : ubs}
@@ -222,7 +237,7 @@ const AuthPage: React.FC = () => {
                   </div>
                 </>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">E-mail *</Label>
                 <div className="relative">

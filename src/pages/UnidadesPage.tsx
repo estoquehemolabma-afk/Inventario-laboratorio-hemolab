@@ -11,6 +11,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const UnidadesPage: React.FC = () => {
@@ -51,36 +52,72 @@ const UnidadesPage: React.FC = () => {
             <Input placeholder="Buscar unidade..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
           </div>
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead><TableHead>Endereço</TableHead><TableHead>Responsável</TableHead>
-              <TableHead>Equipamentos</TableHead><TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUBS.length > 0 ? filteredUBS.map((ubs) => (
-              <TableRow key={ubs.id}>
-                <TableCell className="font-medium">{ubs.name}</TableCell>
-                <TableCell>{ubs.address}</TableCell>
-                <TableCell>{ubs.responsible}</TableCell>
-                <TableCell>{getEquipmentByUBS(ubs.id).length}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" onClick={() => setDeleteId(ubs.id)} className="text-muted-foreground hover:text-destructive">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )) : (
+
+        {/* Mobile View: Cards */}
+        <div className="grid md:hidden grid-cols-1 gap-4 p-4">
+          {filteredUBS.length > 0 ? (
+            filteredUBS.map((ubs) => (
+              <Card key={ubs.id} className="border-border/50 bg-card/50">
+                <CardContent className="p-4 flex flex-col gap-2">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium text-foreground">{ubs.name}</h3>
+                      <p className="text-sm text-muted-foreground">{ubs.address}</p>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(ubs.id)} className="text-muted-foreground hover:text-destructive h-8 w-8">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="text-sm mt-2">
+                    <span className="text-muted-foreground">Responsável:</span> {ubs.responsible}
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Equipamentos:</span> {getEquipmentByUBS(ubs.id).length}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center py-8 text-muted-foreground bg-card rounded-lg border border-border/50">
+              <Building2 className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+              Nenhuma unidade encontrada
+            </div>
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
-                  <Building2 className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">Nenhuma unidade encontrada</p>
-                </TableCell>
+                <TableHead>Nome</TableHead><TableHead>Endereço</TableHead><TableHead>Responsável</TableHead>
+                <TableHead>Equipamentos</TableHead><TableHead className="text-right">Ações</TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredUBS.length > 0 ? filteredUBS.map((ubs) => (
+                <TableRow key={ubs.id}>
+                  <TableCell className="font-medium">{ubs.name}</TableCell>
+                  <TableCell>{ubs.address}</TableCell>
+                  <TableCell>{ubs.responsible}</TableCell>
+                  <TableCell>{getEquipmentByUBS(ubs.id).length}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(ubs.id)} className="text-muted-foreground hover:text-destructive">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    <Building2 className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">Nenhuma unidade encontrada</p>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </motion.div>
 
       <UBSFormDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
