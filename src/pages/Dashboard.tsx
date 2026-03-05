@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Building2,
-  HardDrive,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-  TrendingUp,
-  Calendar
-} from 'lucide-react';
+import { Building2, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import StatCard from '@/components/dashboard/StatCard';
@@ -17,12 +9,11 @@ import UBSFormDialog from '@/components/dialogs/UBSFormDialog';
 import { useInventory } from '@/contexts/InventoryContext';
 
 const Dashboard: React.FC = () => {
-  const { getAllSummaries, ubsList, equipmentList, selectedUBS, searchQuery } = useInventory();
+  const { getAllSummaries, selectedUBS, searchQuery } = useInventory();
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const summaries = getAllSummaries();
 
-  // Filter summaries based on selected UBS and search query
   const filteredSummaries = summaries.filter((summary) => {
     if (selectedUBS && summary.ubs.id !== selectedUBS) return false;
     if (searchQuery) {
@@ -36,55 +27,23 @@ const Dashboard: React.FC = () => {
     return true;
   });
 
-  // Calculate totals from filtered summaries
   const operationalEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.operational, 0);
   const maintenanceEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.maintenance, 0);
   const deficitEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.decommissioned, 0);
-  // const totalEquipment = operationalEquipment + maintenanceEquipment; // Unused variable
 
   return (
     <MainLayout>
       <DashboardHeader onAddClick={() => setShowAddDialog(true)} />
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard
-          title="Total de Unidades"
-          value={filteredSummaries.length}
-          icon={Building2}
-          variant="default"
-          delay={0}
-        />
-        <StatCard
-          title="Déficit"
-          value={deficitEquipment}
-          icon={XCircle}
-          variant="destructive"
-          delay={0.1}
-        />
-        <StatCard
-          title="Funcionando"
-          value={operationalEquipment}
-          icon={CheckCircle}
-          variant="success"
-          delay={0.2}
-        />
-        <StatCard
-          title="Em Manutenção"
-          value={maintenanceEquipment}
-          icon={AlertTriangle}
-          variant="warning"
-          delay={0.3}
-        />
+        <StatCard title="Total de Unidades" value={filteredSummaries.length} icon={Building2} variant="default" delay={0} />
+        <StatCard title="Déficit" value={deficitEquipment} icon={XCircle} variant="destructive" delay={0.1} />
+        <StatCard title="Funcionando" value={operationalEquipment} icon={CheckCircle} variant="success" delay={0.2} />
+        <StatCard title="Em Manutenção" value={maintenanceEquipment} icon={AlertTriangle} variant="warning" delay={0.3} />
       </div>
 
-      {/* Status Legend */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="flex flex-wrap items-center gap-6 mb-6 p-4 bg-card rounded-xl border border-border/50"
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+        className="flex flex-wrap items-center gap-6 mb-6 p-4 bg-card rounded-xl border border-border/50">
         <span className="text-sm font-medium text-foreground">Legenda de Status:</span>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-success" />
@@ -100,15 +59,8 @@ const Dashboard: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* UBS Cards Grid */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        <h2 className="text-xl font-display font-bold text-foreground mb-4">
-          Unidades de Saúde
-        </h2>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+        <h2 className="text-xl font-display font-bold text-foreground mb-4">Unidades Cadastradas</h2>
 
         {filteredSummaries.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { UBS, Equipment, UBSSummary, EquipmentSummary, EquipmentType } from '@/types/inventory';
+import { UBS, Equipment, UBSSummary, EquipmentSummary } from '@/types/inventory';
 import { supabase } from '@/integrations/supabase/client';
 
 interface InventoryContextType {
   ubsList: UBS[];
   equipmentList: Equipment[];
+  equipmentTypes: string[];
   selectedUBS: string | null;
   setSelectedUBS: (id: string | null) => void;
   getUBSSummary: (ubsId: string) => UBSSummary | null;
@@ -16,6 +17,8 @@ interface InventoryContextType {
   addEquipment: (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs'>) => Promise<void>;
   updateEquipment: (id: string, equipment: Partial<Equipment>) => Promise<void>;
   deleteEquipment: (id: string) => Promise<void>;
+  addEquipmentType: (name: string) => Promise<void>;
+  deleteEquipmentType: (name: string) => Promise<void>;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   loading: boolean;
@@ -24,23 +27,6 @@ interface InventoryContextType {
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
-// Helper to map database equipment type to local type
-const mapEquipmentType = (type: string): EquipmentType => {
-  const typeMap: Record<string, EquipmentType> = {
-    'PC': 'PC',
-    'Impressora': 'Impressora',
-    'Monitor': 'Monitor',
-    'Estabilizador': 'Estabilizador',
-    'Scanner': 'Scanner',
-    'Notebook': 'Notebook',
-    'Roteador': 'Roteador',
-    'Switch': 'Switch',
-    'Nobreak': 'Nobreak',
-  };
-  return typeMap[type] || 'PC';
-};
-
-// Helper to map database conservation state to local type
 const mapConservationState = (state: string): 'Funcionando' | 'Manutenção' | 'Inexistente' => {
   const stateMap: Record<string, 'Funcionando' | 'Manutenção' | 'Inexistente'> = {
     'Funcionando': 'Funcionando',
@@ -53,6 +39,7 @@ const mapConservationState = (state: string): 'Funcionando' | 'Manutenção' | '
 export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [ubsList, setUBSList] = useState<UBS[]>([]);
   const [equipmentList, setEquipmentList] = useState<Equipment[]>([]);
+  const [equipmentTypes, setEquipmentTypes] = useState<string[]>([]);
   const [selectedUBS, setSelectedUBS] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -60,15 +47,18 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch UBS
-      const { data: ubsData, error: ubsError } = await supabase
-        .from('ubs')
-        .select('*')
-        .order('name');
+      // Fetch UBS, Equipment, and Equipment Types in parallel
+      const [ubsRes, eqRes, typesRes] = await Promise.all([
+        supabase.from('ubs').select('*').order('name'),
+        supabase.from('equipment').select('*').order('created_at', { ascending: false }),
+        supabase.from('equipment_types').select('*').order('name'),
+      ]);
 
-      if (ubsError) throw ubsError;
+      if (ubsRes.error) throw ubsRes.error;
+      if (eqRes.error) throw eqRes.error;
+      if (typesRes.error) throw typesRes.error;
 
-      const mappedUBS: UBS[] = (ubsData || []).map((ubs) => ({
+      setUBSList((ubsRes.data || []).map((ubs) => ({
         id: ubs.id,
         name: ubs.name,
         address: ubs.address || '',
@@ -77,22 +67,12 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         email: ubs.email || undefined,
         createdAt: ubs.created_at,
         updatedAt: ubs.updated_at,
-      }));
+      })));
 
-      setUBSList(mappedUBS);
-
-      // Fetch Equipment
-      const { data: equipmentData, error: equipmentError } = await supabase
-        .from('equipment')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (equipmentError) throw equipmentError;
-
-      const mappedEquipment: Equipment[] = (equipmentData || []).map((eq) => ({
+      setEquipmentList((eqRes.data || []).map((eq) => ({
         id: eq.id,
         ubsId: eq.ubs_id,
-        type: mapEquipmentType(eq.type),
+        type: eq.type,
         brand: eq.brand || '',
         model: eq.model || '',
         serialNumber: eq.serial_number || '',
@@ -104,9 +84,9 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         maintenanceLogs: [],
         createdAt: eq.created_at,
         updatedAt: eq.updated_at,
-      }));
+      })));
 
-      setEquipmentList(mappedEquipment);
+      setEquipmentTypes((typesRes.data || []).map((t: any) => t.name));
     } catch (error) {
       console.error('Error fetching inventory data:', error);
     } finally {
@@ -114,13 +94,9 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  const refreshData = async () => {
-    await fetchData();
-  };
+  const refreshData = async () => { await fetchData(); };
 
   const getEquipmentByUBS = (ubsId: string): Equipment[] => {
     return equipmentList.filter((eq) => eq.ubsId === ubsId);
@@ -131,9 +107,9 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     if (!ubs) return null;
 
     const ubsEquipment = getEquipmentByUBS(ubsId);
-    const equipmentTypes: EquipmentType[] = ['PC', 'Impressora', 'Monitor', 'Estabilizador', 'Scanner', 'Notebook', 'Roteador', 'Switch', 'Nobreak'];
+    const uniqueTypes = [...new Set(ubsEquipment.map(eq => eq.type))];
 
-    const equipmentByType: EquipmentSummary[] = equipmentTypes.map((type) => {
+    const equipmentByType: EquipmentSummary[] = uniqueTypes.map((type) => {
       const typeEquipment = ubsEquipment.filter((eq) => eq.type === type);
       return {
         type,
@@ -164,26 +140,18 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const addUBS = async (ubs: Omit<UBS, 'id' | 'createdAt' | 'updatedAt'>) => {
     const { error } = await supabase.from('ubs').insert({
-      name: ubs.name,
-      address: ubs.address,
-      responsible: ubs.responsible,
-      phone: ubs.phone || null,
-      email: ubs.email || null,
+      name: ubs.name, address: ubs.address, responsible: ubs.responsible,
+      phone: ubs.phone || null, email: ubs.email || null,
     });
-
     if (error) throw error;
     await refreshData();
   };
 
   const updateUBS = async (id: string, ubs: Partial<UBS>) => {
     const { error } = await supabase.from('ubs').update({
-      name: ubs.name,
-      address: ubs.address,
-      responsible: ubs.responsible,
-      phone: ubs.phone || null,
-      email: ubs.email || null,
+      name: ubs.name, address: ubs.address, responsible: ubs.responsible,
+      phone: ubs.phone || null, email: ubs.email || null,
     }).eq('id', id);
-
     if (error) throw error;
     await refreshData();
   };
@@ -197,24 +165,22 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
   const addEquipment = async (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs'>) => {
     const { error } = await supabase.from('equipment').insert({
       ubs_id: equipment.ubsId,
-      type: equipment.type,
+      type: equipment.type as any,
       brand: equipment.brand,
       model: equipment.model,
       serial_number: equipment.serialNumber,
       patrimony_number: equipment.patrimonyNumber,
       location: equipment.location,
-      conservation_state: equipment.conservationState === 'Inexistente' ? 'Sucata' : equipment.conservationState,
+      conservation_state: (equipment.conservationState === 'Inexistente' ? 'Sucata' : equipment.conservationState) as any,
       installation_date: equipment.installationDate || null,
       observations: equipment.observations,
     });
-
     if (error) throw error;
     await refreshData();
   };
 
   const updateEquipment = async (id: string, equipment: Partial<Equipment>) => {
     const updateData: Record<string, unknown> = {};
-
     if (equipment.ubsId !== undefined) updateData.ubs_id = equipment.ubsId;
     if (equipment.type !== undefined) updateData.type = equipment.type;
     if (equipment.brand !== undefined) updateData.brand = equipment.brand;
@@ -239,26 +205,27 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     await refreshData();
   };
 
+  const addEquipmentType = async (name: string) => {
+    const { error } = await supabase.from('equipment_types').insert({ name });
+    if (error) throw error;
+    await refreshData();
+  };
+
+  const deleteEquipmentType = async (name: string) => {
+    const { error } = await supabase.from('equipment_types').delete().eq('name', name);
+    if (error) throw error;
+    await refreshData();
+  };
+
   return (
     <InventoryContext.Provider
       value={{
-        ubsList,
-        equipmentList,
-        selectedUBS,
-        setSelectedUBS,
-        getUBSSummary,
-        getAllSummaries,
-        getEquipmentByUBS,
-        addUBS,
-        updateUBS,
-        deleteUBS,
-        addEquipment,
-        updateEquipment,
-        deleteEquipment,
-        searchQuery,
-        setSearchQuery,
-        loading,
-        refreshData,
+        ubsList, equipmentList, equipmentTypes, selectedUBS, setSelectedUBS,
+        getUBSSummary, getAllSummaries, getEquipmentByUBS,
+        addUBS, updateUBS, deleteUBS,
+        addEquipment, updateEquipment, deleteEquipment,
+        addEquipmentType, deleteEquipmentType,
+        searchQuery, setSearchQuery, loading, refreshData,
       }}
     >
       {children}

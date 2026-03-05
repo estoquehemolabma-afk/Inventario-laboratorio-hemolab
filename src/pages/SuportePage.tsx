@@ -232,7 +232,7 @@ const SuportePage: React.FC = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Código</TableHead>
-                  <TableHead>UBS</TableHead>
+                  <TableHead>Unidade</TableHead>
                   <TableHead>Solicitante</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Prioridade</TableHead>
