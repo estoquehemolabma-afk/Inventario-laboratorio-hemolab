@@ -1,19 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Building2, 
-  MapPin, 
-  User, 
-  ChevronRight,
-  Monitor,
-  Printer,
-  HardDrive,
-  CheckCircle2,
-  AlertCircle,
-  XCircle
-} from 'lucide-react';
+import { Building2, MapPin, User, ChevronRight } from 'lucide-react';
 import { UBSSummary } from '@/types/inventory';
-import { equipmentTypeLabels } from '@/types/inventory';
+import { getEquipmentTypeLabel } from '@/types/inventory';
 import { getEquipmentIcon } from '@/lib/equipmentUtils';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,7 +24,6 @@ const UBSCard: React.FC<UBSCardProps> = ({ summary, index }) => {
       className="bg-card rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden border border-border/50 cursor-pointer group"
       onClick={() => navigate(`/ubs/${ubs.id}`)}
     >
-      {/* Header with gradient */}
       <div className="gradient-primary p-5 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -67,25 +55,20 @@ const UBSCard: React.FC<UBSCardProps> = ({ summary, index }) => {
         </div>
       </div>
 
-      {/* Equipment Summary */}
       <div className="p-5">
         <div className="flex items-center justify-between mb-4">
           <span className="text-sm text-muted-foreground">Equipamentos</span>
           <span className="text-2xl font-display font-bold text-foreground">{totalEquipment}</span>
         </div>
 
-        {/* Equipment type pills */}
         <div className="flex flex-wrap gap-2 mb-4">
           {equipmentByType.slice(0, 4).map((item) => {
             const Icon = getEquipmentIcon(item.type);
             return (
-              <div 
-                key={item.type}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-muted rounded-lg text-xs font-medium"
-              >
+              <div key={item.type} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-muted rounded-lg text-xs font-medium">
                 <Icon className="w-3.5 h-3.5 text-primary" />
                 <span className="text-foreground">{item.total}</span>
-                <span className="text-muted-foreground">{equipmentTypeLabels[item.type]}</span>
+                <span className="text-muted-foreground">{getEquipmentTypeLabel(item.type)}</span>
               </div>
             );
           })}
@@ -96,7 +79,6 @@ const UBSCard: React.FC<UBSCardProps> = ({ summary, index }) => {
           )}
         </div>
 
-        {/* Status indicators */}
         <div className="flex items-center gap-4 pt-4 border-t border-border">
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-success animate-pulse" />

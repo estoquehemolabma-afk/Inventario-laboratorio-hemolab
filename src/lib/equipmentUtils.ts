@@ -1,4 +1,4 @@
-import { EquipmentType, ConservationState } from '@/types/inventory';
+import { ConservationState } from '@/types/inventory';
 import {
   Monitor,
   Printer,
@@ -9,22 +9,24 @@ import {
   Zap,
   Server,
   Battery,
+  Package,
   LucideIcon
 } from 'lucide-react';
 
-export const getEquipmentIcon = (type: EquipmentType): LucideIcon => {
-  const icons: Record<EquipmentType, LucideIcon> = {
-    PC: HardDrive,
-    Impressora: Printer,
-    Monitor: Monitor,
-    Estabilizador: Zap,
-    Scanner: ScanLine,
-    Notebook: Laptop,
-    Roteador: Wifi,
-    Switch: Server,
-    Nobreak: Battery,
-  };
-  return icons[type];
+const defaultIcons: Record<string, LucideIcon> = {
+  PC: HardDrive,
+  Impressora: Printer,
+  Monitor: Monitor,
+  Estabilizador: Zap,
+  Scanner: ScanLine,
+  Notebook: Laptop,
+  Roteador: Wifi,
+  Switch: Server,
+  Nobreak: Battery,
+};
+
+export const getEquipmentIcon = (type: string): LucideIcon => {
+  return defaultIcons[type] || Package;
 };
 
 export const getStatusColor = (state: ConservationState): string => {

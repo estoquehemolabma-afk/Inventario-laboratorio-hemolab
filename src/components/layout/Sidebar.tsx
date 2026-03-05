@@ -22,7 +22,7 @@ interface SidebarProps {
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-  { icon: Building2, label: 'Unidades (UBS)', path: '/unidades' },
+  { icon: Building2, label: 'Unidades', path: '/unidades' },
   { icon: HardDrive, label: 'Equipamentos', path: '/equipamentos' },
   { icon: Headphones, label: 'Suporte', path: '/suporte' },
   { icon: BarChart3, label: 'Relatórios Suporte', path: '/relatorios-suporte' },
@@ -35,7 +35,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
 
   return (
     <>
-      {/* Mobile overlay */}
       {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -46,13 +45,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         />
       )}
 
-      {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ 
-          width: isOpen ? 280 : 80,
-          x: 0
-        }}
+        animate={{ width: isOpen ? 280 : 80, x: 0 }}
         className={cn(
           "fixed left-0 top-0 h-screen z-50 gradient-sidebar border-r border-sidebar-border",
           "lg:relative lg:translate-x-0",
@@ -60,12 +55,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         )}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
           <div className="flex items-center justify-between p-5 border-b border-sidebar-border">
-            <motion.div 
-              className="flex items-center gap-3"
-              animate={{ opacity: isOpen ? 1 : 0 }}
-            >
+            <motion.div className="flex items-center gap-3" animate={{ opacity: isOpen ? 1 : 0 }}>
               {isOpen && (
                 <>
                   <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
@@ -73,9 +64,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                   </div>
                   <div>
                     <h1 className="font-display font-bold text-sidebar-foreground text-lg">
-                      TI Saúde
+                      Inventário
                     </h1>
-                    <p className="text-xs text-sidebar-foreground/60">Inventário</p>
+                    <p className="text-xs text-sidebar-foreground/60">Estoques & Solicitações</p>
                   </div>
                 </>
               )}
@@ -88,12 +79,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             </button>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path || 
                 (item.path !== '/' && location.pathname.startsWith(item.path));
-              
               return (
                 <NavLink
                   key={item.path}
@@ -107,11 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                 >
                   <item.icon className="w-5 h-5 flex-shrink-0" />
                   {isOpen && (
-                    <motion.span 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="font-medium"
-                    >
+                    <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-medium">
                       {item.label}
                     </motion.span>
                   )}
@@ -120,12 +105,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             })}
           </nav>
 
-          {/* Footer */}
           {isOpen && (
             <div className="p-4 border-t border-sidebar-border">
               <div className="bg-sidebar-accent rounded-xl p-4">
                 <p className="text-xs text-sidebar-foreground/60 mb-1">Versão</p>
-                <p className="text-sm font-medium text-sidebar-foreground">1.0.0 - 2024</p>
+                <p className="text-sm font-medium text-sidebar-foreground">2.0.0 - 2025</p>
               </div>
             </div>
           )}

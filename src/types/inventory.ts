@@ -1,5 +1,5 @@
-// Equipment Types
-export type EquipmentType = 'PC' | 'Impressora' | 'Monitor' | 'Estabilizador' | 'Scanner' | 'Notebook' | 'Roteador' | 'Switch' | 'Nobreak';
+// Equipment Types - now dynamic (string-based)
+export type EquipmentType = string;
 
 export type ConservationState = 'Funcionando' | 'Manutenção' | 'Inexistente';
 
@@ -57,8 +57,8 @@ export interface UBSSummary {
   };
 }
 
-// Equipment type labels in Portuguese
-export const equipmentTypeLabels: Record<EquipmentType, string> = {
+// Default equipment type labels in Portuguese
+export const defaultEquipmentTypeLabels: Record<string, string> = {
   PC: 'Computador',
   Impressora: 'Impressora',
   Monitor: 'Monitor',
@@ -68,6 +68,11 @@ export const equipmentTypeLabels: Record<EquipmentType, string> = {
   Roteador: 'Roteador',
   Switch: 'Switch',
   Nobreak: 'Nobreak',
+};
+
+// Helper to get label for any type
+export const getEquipmentTypeLabel = (type: string): string => {
+  return defaultEquipmentTypeLabels[type] || type;
 };
 
 // Conservation state labels
