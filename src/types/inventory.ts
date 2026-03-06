@@ -19,9 +19,12 @@ export interface Equipment {
   serialNumber: string;
   patrimonyNumber: string;
   location: string;
+  municipality: string;
   conservationState: ConservationState;
   installationDate: string;
   observations: string;
+  isActive: boolean;
+  deactivationReason: string | null;
   maintenanceLogs: MaintenanceLog[];
   createdAt: string;
   updatedAt: string;

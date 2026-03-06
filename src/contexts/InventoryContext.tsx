@@ -14,9 +14,10 @@ interface InventoryContextType {
   addUBS: (ubs: Omit<UBS, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateUBS: (id: string, ubs: Partial<UBS>) => Promise<void>;
   deleteUBS: (id: string) => Promise<void>;
-  addEquipment: (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs'>) => Promise<void>;
+  addEquipment: (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs' | 'isActive' | 'deactivationReason'>) => Promise<void>;
   updateEquipment: (id: string, equipment: Partial<Equipment>) => Promise<void>;
   deleteEquipment: (id: string) => Promise<void>;
+  toggleEquipmentActive: (id: string, isActive: boolean, reason?: string) => Promise<void>;
   addEquipmentType: (name: string) => Promise<void>;
   deleteEquipmentType: (name: string) => Promise<void>;
   searchQuery: string;
@@ -47,7 +48,6 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch UBS, Equipment, and Equipment Types in parallel
       const [ubsRes, eqRes, typesRes] = await Promise.all([
         supabase.from('ubs').select('*').order('name'),
         supabase.from('equipment').select('*').order('created_at', { ascending: false }),
@@ -69,7 +69,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         updatedAt: ubs.updated_at,
       })));
 
-      setEquipmentList((eqRes.data || []).map((eq) => ({
+      setEquipmentList((eqRes.data || []).map((eq: any) => ({
         id: eq.id,
         ubsId: eq.ubs_id,
         type: eq.type,
@@ -78,9 +78,12 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         serialNumber: eq.serial_number || '',
         patrimonyNumber: eq.patrimony_number || '',
         location: eq.location,
+        municipality: eq.municipality || '',
         conservationState: mapConservationState(eq.conservation_state),
         installationDate: eq.installation_date || '',
         observations: eq.observations || '',
+        isActive: eq.is_active !== false,
+        deactivationReason: eq.deactivation_reason || null,
         maintenanceLogs: [],
         createdAt: eq.created_at,
         updatedAt: eq.updated_at,
@@ -106,7 +109,8 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     const ubs = ubsList.find((u) => u.id === ubsId);
     if (!ubs) return null;
 
-    const ubsEquipment = getEquipmentByUBS(ubsId);
+    // Only count active equipment in summaries
+    const ubsEquipment = getEquipmentByUBS(ubsId).filter(eq => eq.isActive);
     const uniqueTypes = [...new Set(ubsEquipment.map(eq => eq.type))];
 
     const equipmentByType: EquipmentSummary[] = uniqueTypes.map((type) => {
@@ -162,7 +166,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     await refreshData();
   };
 
-  const addEquipment = async (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs'>) => {
+  const addEquipment = async (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs' | 'isActive' | 'deactivationReason'>) => {
     const { error } = await supabase.from('equipment').insert({
       ubs_id: equipment.ubsId,
       type: equipment.type as any,
@@ -171,6 +175,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
       serial_number: equipment.serialNumber,
       patrimony_number: equipment.patrimonyNumber,
       location: equipment.location,
+      municipality: equipment.municipality,
       conservation_state: (equipment.conservationState === 'Inexistente' ? 'Sucata' : equipment.conservationState) as any,
       installation_date: equipment.installationDate || null,
       observations: equipment.observations,
@@ -188,6 +193,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     if (equipment.serialNumber !== undefined) updateData.serial_number = equipment.serialNumber;
     if (equipment.patrimonyNumber !== undefined) updateData.patrimony_number = equipment.patrimonyNumber;
     if (equipment.location !== undefined) updateData.location = equipment.location;
+    if (equipment.municipality !== undefined) updateData.municipality = equipment.municipality;
     if (equipment.conservationState !== undefined) {
       updateData.conservation_state = equipment.conservationState === 'Inexistente' ? 'Sucata' : equipment.conservationState;
     }
@@ -201,6 +207,16 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const deleteEquipment = async (id: string) => {
     const { error } = await supabase.from('equipment').delete().eq('id', id);
+    if (error) throw error;
+    await refreshData();
+  };
+
+  const toggleEquipmentActive = async (id: string, isActive: boolean, reason?: string) => {
+    const updateData: Record<string, unknown> = {
+      is_active: isActive,
+      deactivation_reason: isActive ? null : (reason || null),
+    };
+    const { error } = await supabase.from('equipment').update(updateData).eq('id', id);
     if (error) throw error;
     await refreshData();
   };
@@ -223,7 +239,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         ubsList, equipmentList, equipmentTypes, selectedUBS, setSelectedUBS,
         getUBSSummary, getAllSummaries, getEquipmentByUBS,
         addUBS, updateUBS, deleteUBS,
-        addEquipment, updateEquipment, deleteEquipment,
+        addEquipment, updateEquipment, deleteEquipment, toggleEquipmentActive,
         addEquipmentType, deleteEquipmentType,
         searchQuery, setSearchQuery, loading, refreshData,
       }}

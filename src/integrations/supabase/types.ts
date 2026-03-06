@@ -19,10 +19,13 @@ export type Database = {
           brand: string | null
           conservation_state: Database["public"]["Enums"]["conservation_state"]
           created_at: string
+          deactivation_reason: string | null
           id: string
           installation_date: string | null
+          is_active: boolean | null
           location: string
           model: string | null
+          municipality: string | null
           observations: string | null
           patrimony_number: string | null
           serial_number: string | null
@@ -34,10 +37,13 @@ export type Database = {
           brand?: string | null
           conservation_state?: Database["public"]["Enums"]["conservation_state"]
           created_at?: string
+          deactivation_reason?: string | null
           id?: string
           installation_date?: string | null
+          is_active?: boolean | null
           location: string
           model?: string | null
+          municipality?: string | null
           observations?: string | null
           patrimony_number?: string | null
           serial_number?: string | null
@@ -49,10 +55,13 @@ export type Database = {
           brand?: string | null
           conservation_state?: Database["public"]["Enums"]["conservation_state"]
           created_at?: string
+          deactivation_reason?: string | null
           id?: string
           installation_date?: string | null
+          is_active?: boolean | null
           location?: string
           model?: string | null
+          municipality?: string | null
           observations?: string | null
           patrimony_number?: string | null
           serial_number?: string | null

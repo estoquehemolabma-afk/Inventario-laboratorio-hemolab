@@ -28,12 +28,13 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
   const [newTypeName, setNewTypeName] = useState('');
 
   const equipmentFormSchema = z.object({
-    type: z.string().min(1, 'Tipo é obrigatório'),
+    type: z.string().min(1, 'Grupo é obrigatório'),
     brand: z.string().min(1, 'Marca é obrigatória').max(50),
     model: z.string().min(1, 'Modelo é obrigatório').max(50),
     serialNumber: z.string().min(1, 'Número de série é obrigatório').max(50),
     patrimonyNumber: z.string().min(1, 'Patrimônio é obrigatório').max(50),
-    location: z.string().min(1, 'Local é obrigatório').max(100),
+    location: z.string().min(1, 'Departamento é obrigatório').max(100),
+    municipality: z.string().min(1, 'Município é obrigatório').max(100),
     conservationState: z.enum(['Funcionando', 'Manutenção', 'Inexistente'] as const),
     installationDate: z.string().min(1, 'Data de instalação é obrigatória'),
     observations: z.string().max(500).optional(),
@@ -50,6 +51,7 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
       serialNumber: editingEquipment?.serialNumber || '',
       patrimonyNumber: editingEquipment?.patrimonyNumber || '',
       location: editingEquipment?.location || '',
+      municipality: editingEquipment?.municipality || '',
       conservationState: editingEquipment?.conservationState || 'Funcionando',
       installationDate: editingEquipment?.installationDate || new Date().toISOString().split('T')[0],
       observations: editingEquipment?.observations || '',
@@ -63,27 +65,32 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
       form.setValue('type', newTypeName.trim());
       setNewTypeName('');
       setShowNewType(false);
-      toast.success('Novo tipo adicionado!');
+      toast.success('Novo grupo adicionado!');
     } catch (error) {
-      toast.error('Erro ao adicionar tipo. Verifique se já não existe.');
+      toast.error('Erro ao adicionar grupo. Verifique se já não existe.');
     }
   };
 
-  const onSubmit = (data: EquipmentFormData) => {
-    if (editingEquipment) {
-      updateEquipment(editingEquipment.id, data);
-      toast.success('Equipamento atualizado com sucesso!');
-    } else {
-      addEquipment({
-        type: data.type, brand: data.brand, model: data.model,
-        serialNumber: data.serialNumber, patrimonyNumber: data.patrimonyNumber,
-        location: data.location, conservationState: data.conservationState,
-        installationDate: data.installationDate, ubsId, observations: data.observations || '',
-      });
-      toast.success('Equipamento cadastrado com sucesso!');
+  const onSubmit = async (data: EquipmentFormData) => {
+    try {
+      if (editingEquipment) {
+        await updateEquipment(editingEquipment.id, { ...data, municipality: data.municipality });
+        toast.success('Equipamento atualizado com sucesso!');
+      } else {
+        await addEquipment({
+          type: data.type, brand: data.brand, model: data.model,
+          serialNumber: data.serialNumber, patrimonyNumber: data.patrimonyNumber,
+          location: data.location, municipality: data.municipality,
+          conservationState: data.conservationState,
+          installationDate: data.installationDate, ubsId, observations: data.observations || '',
+        });
+        toast.success('Equipamento cadastrado com sucesso!');
+      }
+      form.reset();
+      onOpenChange(false);
+    } catch (error) {
+      toast.error('Erro ao salvar equipamento.');
     }
-    form.reset();
-    onOpenChange(false);
   };
 
   return (
@@ -104,12 +111,12 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="type" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo de Equipamento</FormLabel>
+                  <FormLabel>Grupo</FormLabel>
                   {!showNewType ? (
                     <div className="space-y-2">
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="Selecione o grupo" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {equipmentTypes.map((type) => (
@@ -118,12 +125,12 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
                         </SelectContent>
                       </Select>
                       <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => setShowNewType(true)}>
-                        <Plus className="w-3 h-3 mr-1" /> Novo Tipo
+                        <Plus className="w-3 h-3 mr-1" /> Novo Grupo
                       </Button>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Input placeholder="Nome do novo tipo" value={newTypeName} onChange={(e) => setNewTypeName(e.target.value)} />
+                      <Input placeholder="Nome do novo grupo" value={newTypeName} onChange={(e) => setNewTypeName(e.target.value)} />
                       <div className="flex gap-2">
                         <Button type="button" size="sm" onClick={handleAddNewType} className="flex-1">Adicionar</Button>
                         <Button type="button" variant="outline" size="sm" onClick={() => setShowNewType(false)}>Cancelar</Button>
@@ -171,15 +178,23 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="location" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Local / Setor</FormLabel>
+                  <FormLabel>Departamento</FormLabel>
                   <FormControl><Input placeholder="Ex: Recepção, Almoxarifado, Sala 1" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
-              <FormField control={form.control} name="installationDate" render={({ field }) => (
-                <FormItem><FormLabel>Data de Instalação</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormField control={form.control} name="municipality" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Município</FormLabel>
+                  <FormControl><Input placeholder="Ex: São Paulo, Recife" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
             </div>
+
+            <FormField control={form.control} name="installationDate" render={({ field }) => (
+              <FormItem><FormLabel>Data de Instalação</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
 
             <FormField control={form.control} name="observations" render={({ field }) => (
               <FormItem>
