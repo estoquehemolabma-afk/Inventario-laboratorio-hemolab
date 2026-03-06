@@ -278,7 +278,7 @@ const SuportePage: React.FC = () => {
                   <TableHead>Código</TableHead>
                   <TableHead>Unidade</TableHead>
                   <TableHead>Solicitante</TableHead>
-                  <TableHead>Tipo</TableHead>
+                  <TableHead>Grupo</TableHead>
                   <TableHead>Prioridade</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Data</TableHead>
