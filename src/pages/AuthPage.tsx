@@ -144,8 +144,8 @@ const AuthPage: React.FC = () => {
               <Activity className="w-8 h-8 text-white" />
             </div>
           </div>
-          <h1 className="text-2xl font-display font-bold">TI Saúde</h1>
-          <p className="text-muted-foreground">Portal de Suporte Técnico</p>
+          <h1 className="text-2xl font-display font-bold">Chamados Hemolab</h1>
+          <p className="text-muted-foreground">Sistema de Chamados e Suporte</p>
         </div>
 
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm">

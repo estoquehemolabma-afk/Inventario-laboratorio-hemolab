@@ -384,18 +384,17 @@ const SuportePage: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Tipo</Label>
+                  <Label>Grupo</Label>
                   <Select value={newType} onValueChange={(v) => setNewType(v)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
-                      <SelectItem value="Sistema/Software">Sistema/Software</SelectItem>
-                      <SelectItem value="Rede/Internet">Rede/Internet</SelectItem>
-                      {equipmentTypes.map(type => (
-                        <SelectItem key={`type-${type}`} value={type}>{type}</SelectItem>
-                      ))}
-                      <SelectItem value="Outros">Outros</SelectItem>
+                      <SelectItem value="Imóvel">Imóvel</SelectItem>
+                      <SelectItem value="Escritório">Escritório</SelectItem>
+                      <SelectItem value="Veículos">Veículos</SelectItem>
+                      <SelectItem value="Material Técnico">Material Técnico</SelectItem>
+                      <SelectItem value="Eletro">Eletro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
