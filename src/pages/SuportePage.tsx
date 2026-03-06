@@ -253,7 +253,7 @@ const SuportePage: React.FC = () => {
                     <span className="text-muted-foreground">Requisitante:</span> {request.requester_name}
                   </div>
                   <div className="text-sm">
-                    <span className="text-muted-foreground">Tipo:</span> {request.request_type}
+                    <span className="text-muted-foreground">Grupo:</span> {request.request_type}
                   </div>
                   <div className="flex justify-between items-end pt-2">
                     <div className="text-xs text-muted-foreground">
@@ -278,7 +278,7 @@ const SuportePage: React.FC = () => {
                   <TableHead>Código</TableHead>
                   <TableHead>Unidade</TableHead>
                   <TableHead>Solicitante</TableHead>
-                  <TableHead>Tipo</TableHead>
+                  <TableHead>Grupo</TableHead>
                   <TableHead>Prioridade</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Data</TableHead>
@@ -354,6 +354,29 @@ const SuportePage: React.FC = () => {
                 <p className="text-sm">{selectedRequest.description}</p>
               </div>
 
+              {/* Informações do Equipamento */}
+              {selectedRequest.equipment_info && (
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-sm text-muted-foreground mb-1">Informações do Equipamento</p>
+                  <p className="text-sm">{selectedRequest.equipment_info}</p>
+                </div>
+              )}
+
+              {/* Info do Solicitante */}
+              <div className="bg-muted/50 rounded-lg p-3 space-y-1">
+                <p className="text-sm text-muted-foreground mb-1">Dados do Solicitante</p>
+                <p className="text-sm"><strong>Nome:</strong> {selectedRequest.requester_name}</p>
+                {selectedRequest.requester_email && (
+                  <p className="text-sm"><strong>E-mail:</strong> {selectedRequest.requester_email}</p>
+                )}
+                {selectedRequest.requester_phone && (
+                  <p className="text-sm"><strong>Telefone:</strong> {selectedRequest.requester_phone}</p>
+                )}
+                <p className="text-sm"><strong>Unidade:</strong> {selectedRequest.ubs_name}</p>
+                <p className="text-sm"><strong>Local/Setor:</strong> {selectedRequest.location}</p>
+                <p className="text-sm"><strong>Grupo:</strong> {selectedRequest.request_type}</p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Status</Label>
@@ -384,18 +407,17 @@ const SuportePage: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Tipo</Label>
+                  <Label>Grupo</Label>
                   <Select value={newType} onValueChange={(v) => setNewType(v)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
-                      <SelectItem value="Sistema/Software">Sistema/Software</SelectItem>
-                      <SelectItem value="Rede/Internet">Rede/Internet</SelectItem>
-                      {equipmentTypes.map(type => (
-                        <SelectItem key={`type-${type}`} value={type}>{type}</SelectItem>
-                      ))}
-                      <SelectItem value="Outros">Outros</SelectItem>
+                      <SelectItem value="Imóvel">Imóvel</SelectItem>
+                      <SelectItem value="Escritório">Escritório</SelectItem>
+                      <SelectItem value="Veículos">Veículos</SelectItem>
+                      <SelectItem value="Material Técnico">Material Técnico</SelectItem>
+                      <SelectItem value="Eletro">Eletro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
