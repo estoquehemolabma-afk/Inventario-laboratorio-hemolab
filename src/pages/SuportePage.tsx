@@ -354,6 +354,29 @@ const SuportePage: React.FC = () => {
                 <p className="text-sm">{selectedRequest.description}</p>
               </div>
 
+              {/* Informações do Equipamento */}
+              {selectedRequest.equipment_info && (
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-sm text-muted-foreground mb-1">Informações do Equipamento</p>
+                  <p className="text-sm">{selectedRequest.equipment_info}</p>
+                </div>
+              )}
+
+              {/* Info do Solicitante */}
+              <div className="bg-muted/50 rounded-lg p-3 space-y-1">
+                <p className="text-sm text-muted-foreground mb-1">Dados do Solicitante</p>
+                <p className="text-sm"><strong>Nome:</strong> {selectedRequest.requester_name}</p>
+                {selectedRequest.requester_email && (
+                  <p className="text-sm"><strong>E-mail:</strong> {selectedRequest.requester_email}</p>
+                )}
+                {selectedRequest.requester_phone && (
+                  <p className="text-sm"><strong>Telefone:</strong> {selectedRequest.requester_phone}</p>
+                )}
+                <p className="text-sm"><strong>Unidade:</strong> {selectedRequest.ubs_name}</p>
+                <p className="text-sm"><strong>Local/Setor:</strong> {selectedRequest.location}</p>
+                <p className="text-sm"><strong>Grupo:</strong> {selectedRequest.request_type}</p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Status</Label>
