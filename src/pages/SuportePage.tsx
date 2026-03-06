@@ -253,7 +253,7 @@ const SuportePage: React.FC = () => {
                     <span className="text-muted-foreground">Requisitante:</span> {request.requester_name}
                   </div>
                   <div className="text-sm">
-                    <span className="text-muted-foreground">Tipo:</span> {request.request_type}
+                    <span className="text-muted-foreground">Grupo:</span> {request.request_type}
                   </div>
                   <div className="flex justify-between items-end pt-2">
                     <div className="text-xs text-muted-foreground">
