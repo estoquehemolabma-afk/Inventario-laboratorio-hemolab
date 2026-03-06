@@ -129,7 +129,7 @@ export type Database = {
           id: string
           location: string
           priority: Database["public"]["Enums"]["support_priority"]
-          request_type: Database["public"]["Enums"]["support_type"]
+          request_type: string
           requester_email: string | null
           requester_name: string
           requester_phone: string | null
@@ -147,7 +147,7 @@ export type Database = {
           id?: string
           location: string
           priority?: Database["public"]["Enums"]["support_priority"]
-          request_type?: Database["public"]["Enums"]["support_type"]
+          request_type?: string
           requester_email?: string | null
           requester_name: string
           requester_phone?: string | null
@@ -165,7 +165,7 @@ export type Database = {
           id?: string
           location?: string
           priority?: Database["public"]["Enums"]["support_priority"]
-          request_type?: Database["public"]["Enums"]["support_type"]
+          request_type?: string
           requester_email?: string | null
           requester_name?: string
           requester_phone?: string | null
