@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Building2, MapPin, User, Phone, Mail, Trash2, Plus, FileText, Download } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, User, Phone, Mail, Trash2, Plus, FileText, Download, Pencil, Power, PowerOff, MoreHorizontal } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { useInventory } from '@/contexts/InventoryContext';
 import { getEquipmentIcon, getStatusBgColor, getStatusTextColor } from '@/lib/equipmentUtils';
 import { getEquipmentTypeLabel, conservationStateLabels } from '@/types/inventory';
@@ -15,14 +16,24 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Equipment } from '@/types/inventory';
 
 const UBSDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getUBSSummary, getEquipmentByUBS, deleteEquipment, deleteUBS } = useInventory();
+  const { getUBSSummary, getEquipmentByUBS, deleteEquipment, deleteUBS, toggleEquipmentActive } = useInventory();
   const [showAddEquipment, setShowAddEquipment] = useState(false);
+  const [editingEquipment, setEditingEquipment] = useState<Equipment | undefined>(undefined);
   const [deleteEquipmentId, setDeleteEquipmentId] = useState<string | null>(null);
   const [showDeleteUBS, setShowDeleteUBS] = useState(false);
+  const [deactivateId, setDeactivateId] = useState<string | null>(null);
+  const [deactivationReason, setDeactivationReason] = useState('');
 
   const summary = id ? getUBSSummary(id) : null;
   const equipment = id ? getEquipmentByUBS(id) : [];
@@ -49,6 +60,20 @@ const UBSDetail: React.FC = () => {
   const handleGenerateReport = () => { generateUBSReport(ubs, equipment); toast.success('Relatório PDF gerado com sucesso!'); };
   const handleDeleteEquipment = () => { if (deleteEquipmentId) { deleteEquipment(deleteEquipmentId); setDeleteEquipmentId(null); toast.success('Equipamento removido!'); } };
   const handleDeleteUBS = () => { if (id) { deleteUBS(id); navigate('/'); toast.success('Unidade removida!'); } };
+
+  const handleDeactivate = async () => {
+    if (deactivateId && deactivationReason.trim()) {
+      await toggleEquipmentActive(deactivateId, false, deactivationReason.trim());
+      setDeactivateId(null);
+      setDeactivationReason('');
+      toast.success('Equipamento desativado!');
+    }
+  };
+
+  const handleActivate = async (eqId: string) => {
+    await toggleEquipmentActive(eqId, true);
+    toast.success('Equipamento ativado!');
+  };
 
   return (
     <MainLayout>
@@ -85,7 +110,7 @@ const UBSDetail: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
-            <div className="text-center"><p className="text-3xl font-display font-bold text-foreground">{summary.totalEquipment}</p><p className="text-sm text-muted-foreground">Total</p></div>
+            <div className="text-center"><p className="text-3xl font-display font-bold text-foreground">{summary.totalEquipment}</p><p className="text-sm text-muted-foreground">Total Ativos</p></div>
             <div className="text-center"><p className="text-3xl font-display font-bold text-success">{summary.equipmentByState.operational}</p><p className="text-sm text-muted-foreground">Funcionando</p></div>
             <div className="text-center"><p className="text-3xl font-display font-bold text-warning">{summary.equipmentByState.maintenance}</p><p className="text-sm text-muted-foreground">Manutenção</p></div>
             <div className="text-center"><p className="text-3xl font-display font-bold text-destructive">{summary.equipmentByState.decommissioned}</p><p className="text-sm text-muted-foreground">Inexistente</p></div>
@@ -95,9 +120,9 @@ const UBSDetail: React.FC = () => {
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-display font-bold text-foreground">Equipamentos por Setor</h2>
+          <h2 className="text-xl font-display font-bold text-foreground">Equipamentos por Departamento</h2>
           <Button onClick={() => setShowAddEquipment(true)} className="gradient-primary text-white border-0">
-            <Plus className="w-4 h-4 mr-2" /> Novo Equipamento
+            <Plus className="w-4 h-4 mr-2" /> Equipamento
           </Button>
         </div>
 
@@ -113,7 +138,7 @@ const UBSDetail: React.FC = () => {
                   {items.map((eq) => {
                     const Icon = getEquipmentIcon(eq.type);
                     return (
-                      <div key={eq.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                      <div key={eq.id} className={`flex items-center justify-between p-4 hover:bg-muted/50 transition-colors ${!eq.isActive ? 'opacity-60' : ''}`}>
                         <div className="flex items-center gap-4">
                           <div className="p-2 bg-primary/10 rounded-lg"><Icon className="w-5 h-5 text-primary" /></div>
                           <div>
@@ -122,13 +147,36 @@ const UBSDetail: React.FC = () => {
                               <Badge className={`${getStatusBgColor(eq.conservationState)} ${getStatusTextColor(eq.conservationState)} border-0`}>
                                 {conservationStateLabels[eq.conservationState]}
                               </Badge>
+                              {!eq.isActive && <Badge variant="outline" className="border-destructive text-destructive text-xs">Inativo</Badge>}
                             </div>
                             <p className="text-sm text-muted-foreground">{eq.brand} {eq.model} • Pat: {eq.patrimonyNumber}</p>
+                            {!eq.isActive && eq.deactivationReason && (
+                              <p className="text-xs text-destructive mt-1">Motivo: {eq.deactivationReason}</p>
+                            )}
                           </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteEquipmentId(eq.id)} className="text-muted-foreground hover:text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreHorizontal className="w-4 h-4" /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setEditingEquipment(eq)}>
+                              <Pencil className="w-4 h-4 mr-2" /> Editar
+                            </DropdownMenuItem>
+                            {eq.isActive ? (
+                              <DropdownMenuItem onClick={() => setDeactivateId(eq.id)} className="text-warning">
+                                <PowerOff className="w-4 h-4 mr-2" /> Desativar
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onClick={() => handleActivate(eq.id)} className="text-success">
+                                <Power className="w-4 h-4 mr-2" /> Ativar
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={() => setDeleteEquipmentId(eq.id)} className="text-destructive">
+                              <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     );
                   })}
@@ -147,7 +195,14 @@ const UBSDetail: React.FC = () => {
         )}
       </motion.div>
 
-      {id && <EquipmentFormDialog open={showAddEquipment} onOpenChange={setShowAddEquipment} ubsId={id} />}
+      {id && (showAddEquipment || editingEquipment) && (
+        <EquipmentFormDialog
+          open={showAddEquipment || !!editingEquipment}
+          onOpenChange={(open) => { if (!open) { setShowAddEquipment(false); setEditingEquipment(undefined); } }}
+          ubsId={editingEquipment?.ubsId || id}
+          editingEquipment={editingEquipment}
+        />
+      )}
 
       <AlertDialog open={!!deleteEquipmentId} onOpenChange={() => setDeleteEquipmentId(null)}>
         <AlertDialogContent>
@@ -166,6 +221,21 @@ const UBSDetail: React.FC = () => {
             <AlertDialogAction onClick={handleDeleteUBS} className="bg-destructive hover:bg-destructive/90">Excluir Unidade</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Deactivate Dialog */}
+      <Dialog open={!!deactivateId} onOpenChange={() => { setDeactivateId(null); setDeactivationReason(''); }}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><PowerOff className="w-5 h-5 text-warning" /> Desativar Equipamento</DialogTitle>
+            <DialogDescription>Informe o motivo da desativação. Equipamentos desativados não serão contabilizados no inventário.</DialogDescription>
+          </DialogHeader>
+          <Textarea placeholder="Justificativa para desativação..." value={deactivationReason} onChange={(e) => setDeactivationReason(e.target.value)} rows={3} />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDeactivateId(null); setDeactivationReason(''); }}>Cancelar</Button>
+            <Button onClick={handleDeactivate} disabled={!deactivationReason.trim()} className="bg-warning text-warning-foreground hover:bg-warning/90">Desativar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };
