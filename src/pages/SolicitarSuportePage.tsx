@@ -31,9 +31,10 @@ const SolicitarSuportePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, loading: authLoading, signOut } = useAuth();
-  const { getEquipmentByUBS, equipmentTypes } = useInventory();
+  const { getEquipmentByUBS, equipmentList, ubsList } = useInventory();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
+  const [ubsEquipments, setUbsEquipments] = useState<any[]>([]);
 
   useEffect(() => { if (!authLoading && !user) navigate('/auth'); }, [user, authLoading, navigate]);
 
@@ -45,6 +46,39 @@ const SolicitarSuportePage: React.FC = () => {
   });
 
   useEffect(() => { if (userUbsList.length === 1) form.setValue('ubs_name', userUbsList[0]); }, [profile, form, userUbsList]);
+
+  // When UBS changes, load its equipment
+  const selectedUbsName = form.watch('ubs_name');
+  useEffect(() => {
+    if (selectedUbsName) {
+      // Find UBS id by name
+      const ubs = ubsList.find(u => u.name === selectedUbsName);
+      if (ubs) {
+        const eqs = equipmentList.filter(e => e.ubsId === ubs.id && e.isActive);
+        setUbsEquipments(eqs);
+      } else {
+        setUbsEquipments([]);
+      }
+      // Reset equipment selection when UBS changes
+      form.setValue('equipment_info', '');
+      form.setValue('location', '');
+      form.setValue('request_type', '');
+    } else {
+      setUbsEquipments([]);
+    }
+  }, [selectedUbsName, ubsList, equipmentList]);
+
+  // When equipment is selected, auto-fill location and group
+  const selectedEquipmentInfo = form.watch('equipment_info');
+  useEffect(() => {
+    if (selectedEquipmentInfo && selectedEquipmentInfo !== 'Outro (Não listado)') {
+      const eq = ubsEquipments.find(e => `${e.brand} ${e.model} - PAT: ${e.patrimonyNumber}` === selectedEquipmentInfo);
+      if (eq) {
+        form.setValue('location', eq.location || '');
+        form.setValue('request_type', eq.type || '');
+      }
+    }
+  }, [selectedEquipmentInfo, ubsEquipments]);
 
   const onSubmit = async (data: FormData) => {
     if (!profile) return;
@@ -154,39 +188,30 @@ const SolicitarSuportePage: React.FC = () => {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="font-semibold text-foreground">Informações da Unidade</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="ubs_name" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome da Unidade *</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || undefined}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione a unidade" /></SelectTrigger></FormControl>
-                            <SelectContent className="max-h-[300px]">
-                              {userUbsList.map((ubs) => (<SelectItem key={ubs} value={ubs}>{ubs}</SelectItem>))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="location" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Local/Setor *</FormLabel>
-                          <FormControl><Input placeholder="Ex: Recepção, Sala 1" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
+                    <FormField control={form.control} name="ubs_name" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome da Unidade *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}>
+                          <FormControl><SelectTrigger><SelectValue placeholder="Selecione a unidade" /></SelectTrigger></FormControl>
+                          <SelectContent className="max-h-[300px]">
+                            {userUbsList.map((ubs) => (<SelectItem key={ubs} value={ubs}>{ubs}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                   </div>
-                  <div className="space-y-4">
+                    <div className="space-y-4">
                     <h3 className="font-semibold text-foreground">Detalhes do Problema</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {form.watch('ubs_name') && (
+                      {selectedUbsName && (
                         <FormField control={form.control} name="equipment_info" render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Informações do Equipamento</FormLabel>
+                            <FormLabel>Equipamento da Unidade</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value || undefined}>
-                              <FormControl><SelectTrigger><SelectValue placeholder="Opcional: Selecione um equipamento da unidade" /></SelectTrigger></FormControl>
+                              <FormControl><SelectTrigger><SelectValue placeholder="Selecione um equipamento" /></SelectTrigger></FormControl>
                               <SelectContent className="max-h-[300px]">
-                                {getEquipmentByUBS(userUbsList.find(u => u === form.watch('ubs_name')) || '').map((eq) => (
+                                {ubsEquipments.map((eq) => (
                                   <SelectItem key={eq.id} value={`${eq.brand} ${eq.model} - PAT: ${eq.patrimonyNumber}`}>
                                     {eq.type}: {eq.brand} {eq.model} (Pat: {eq.patrimonyNumber})
                                   </SelectItem>
@@ -212,6 +237,14 @@ const SolicitarSuportePage: React.FC = () => {
                               <SelectItem value="Eletro">Eletro</SelectItem>
                             </SelectContent>
                           </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+
+                      <FormField control={form.control} name="location" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Departamento/Setor *</FormLabel>
+                          <FormControl><Input placeholder="Ex: Recepção, Sala 1" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
