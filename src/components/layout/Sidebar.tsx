@@ -51,11 +51,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
 
       <motion.aside
         initial={false}
-        animate={{ width: isOpen ? 280 : 80, x: 0 }}
+        animate={{ 
+          width: isOpen ? 280 : 80,
+          x: 0 
+        }}
         className={cn(
           "fixed left-0 top-0 h-screen z-50 gradient-sidebar border-r border-sidebar-border",
           "lg:relative lg:translate-x-0",
-          !isOpen && "max-lg:-translate-x-full"
+          // On mobile: completely hide when closed (no icon strip)
+          !isOpen && "max-lg:hidden"
         )}
       >
         <div className="flex flex-col h-full">
