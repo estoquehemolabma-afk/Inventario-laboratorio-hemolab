@@ -52,9 +52,9 @@
     --sidebar-ring: 2 70% 51%;
 
     /* Custom gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 80% 45%) 0%, hsl(175 60% 40%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
-    --gradient-sidebar: linear-gradient(180deg, hsl(215 25% 12%) 0%, hsl(215 30% 8%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(155 37% 18%) 0%, hsl(2 70% 51%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(150 20% 97%) 100%);
+    --gradient-sidebar: linear-gradient(180deg, hsl(155 37% 12%) 0%, hsl(155 40% 8%) 100%);
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(215 25% 15% / 0.05);
