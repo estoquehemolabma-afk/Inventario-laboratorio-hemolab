@@ -34,6 +34,7 @@ const navItems = [
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation();
+  const { signOut, profile } = useAuth();
 
   return (
     <>
