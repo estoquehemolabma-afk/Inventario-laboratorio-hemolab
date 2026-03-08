@@ -51,11 +51,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
 
       <motion.aside
         initial={false}
-        animate={{ width: isOpen ? 280 : 80, x: 0 }}
+        animate={{ 
+          width: isOpen ? 280 : 80,
+          x: 0 
+        }}
         className={cn(
           "fixed left-0 top-0 h-screen z-50 gradient-sidebar border-r border-sidebar-border",
           "lg:relative lg:translate-x-0",
-          !isOpen && "max-lg:-translate-x-full"
+          // On mobile: completely hide when closed (no icon strip)
+          !isOpen && "max-lg:hidden"
         )}
       >
         <div className="flex flex-col h-full">
@@ -89,6 +93,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  onClick={() => {
+                    // Close sidebar on mobile after navigation
+                    if (window.innerWidth < 1024) onToggle();
+                  }}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
                     isActive 
