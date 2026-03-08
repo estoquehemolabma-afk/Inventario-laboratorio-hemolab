@@ -49,6 +49,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return data as Profile;
   };
 
+  const fetchRole = async (userId: string) => {
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .maybeSingle();
+    return !!data;
+  };
+
+  const refreshRole = async () => {
+    if (user) {
+      const admin = await fetchRole(user.id);
+      setIsAdmin(admin);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
