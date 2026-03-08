@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_invite_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
       equipment: {
         Row: {
           brand: string | null
@@ -225,7 +246,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      validate_invite_code: { Args: { input_code: string }; Returns: boolean }
     }
     Enums: {
       conservation_state: "Funcionando" | "Manutenção" | "Sucata"
