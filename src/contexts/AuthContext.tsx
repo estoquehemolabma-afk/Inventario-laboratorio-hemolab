@@ -157,6 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       session,
       profile,
       isAdmin,
+      roleLoaded,
       loading,
       signIn,
       signUp,
