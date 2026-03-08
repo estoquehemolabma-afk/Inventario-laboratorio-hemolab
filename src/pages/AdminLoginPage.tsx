@@ -25,14 +25,14 @@ const AdminLoginPage: React.FC = () => {
   const [inviteCode, setInviteCode] = useState('');
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && roleLoaded) {
       if (isAdmin) {
         navigate('/');
       } else {
         navigate('/solicitar-suporte');
       }
     }
-  }, [user, isAdmin, authLoading, navigate]);
+  }, [user, isAdmin, roleLoaded, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
