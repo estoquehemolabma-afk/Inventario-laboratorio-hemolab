@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity, Mail, Lock, User, Phone, ArrowLeft, Building2, X } from 'lucide-react';
+import { Mail, Lock, User, Phone, ArrowLeft, Building2, X } from 'lucide-react';
+import logoGota from '@/assets/logogota.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
