@@ -81,8 +81,8 @@ const AcompanharSuportePage: React.FC = () => {
             <Activity className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="font-display font-bold text-lg">TI Saúde</h1>
-            <p className="text-xs text-muted-foreground">Acompanhamento de Suporte</p>
+            <h1 className="font-display font-bold text-lg">Inventário</h1>
+            <p className="text-xs text-muted-foreground">Solicitação de Suporte</p>
           </div>
         </div>
       </header>
