@@ -16,6 +16,7 @@ import {
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import logoGota from '@/assets/logogota.png';
 
 interface SidebarProps {
   isOpen: boolean;
