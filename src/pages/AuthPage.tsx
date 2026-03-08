@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity, Mail, Lock, User, Phone, ArrowLeft, Building2, X } from 'lucide-react';
+import { Mail, Lock, User, Phone, ArrowLeft, Building2, X } from 'lucide-react';
+import logoGota from '@/assets/logogota.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -140,9 +141,7 @@ const AuthPage: React.FC = () => {
             Voltar ao início
           </Link>
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center">
-              <Activity className="w-8 h-8 text-white" />
-            </div>
+            <img src={logoGota} alt="Hemolab Logo" className="w-16 h-16 object-contain" />
           </div>
           <h1 className="text-2xl font-display font-bold">Chamados Hemolab</h1>
           <p className="text-muted-foreground">Sistema de Chamados e Suporte</p>

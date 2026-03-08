@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity, ArrowLeft, Clock, CheckCircle2, Wrench, XCircle, Search } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle2, Wrench, XCircle, Search } from 'lucide-react';
+import logoGota from '@/assets/logogota.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,9 +78,7 @@ const AcompanharSuportePage: React.FC = () => {
       {/* Header */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-            <Activity className="w-6 h-6 text-white" />
-          </div>
+          <img src={logoGota} alt="Hemolab Logo" className="w-10 h-10 object-contain" style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.8))' }} />
           <div>
             <h1 className="font-display font-bold text-lg">Inventário</h1>
             <p className="text-xs text-muted-foreground">Solicitação de Suporte</p>
