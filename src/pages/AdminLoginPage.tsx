@@ -52,7 +52,7 @@ const AdminLoginPage: React.FC = () => {
           return;
         }
         toast({ title: 'Login realizado com sucesso!' });
-        navigate('/');
+        // Navigation handled by useEffect after role loads
       } else {
         if (!fullName.trim()) {
           toast({ title: 'Nome obrigatório', description: 'Informe seu nome completo.', variant: 'destructive' });
