@@ -40,7 +40,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               
               <div className="flex items-center gap-3 pl-3 border-l border-border">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-foreground">Admin</p>
+                  <p className="text-sm font-medium text-foreground">{profile?.full_name || 'Admin'}</p>
                   <p className="text-xs text-muted-foreground">Administrador</p>
                 </div>
                 <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center">
