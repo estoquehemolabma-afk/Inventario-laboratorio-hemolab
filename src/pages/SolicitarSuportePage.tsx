@@ -210,17 +210,17 @@ const SolicitarSuportePage: React.FC = () => {
                       )} />
                     </div>
                   </div>
-                  <div className="space-y-4">
+                    <div className="space-y-4">
                     <h3 className="font-semibold text-foreground">Detalhes do Problema</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {form.watch('ubs_name') && (
+                      {selectedUbsName && (
                         <FormField control={form.control} name="equipment_info" render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Informações do Equipamento</FormLabel>
+                            <FormLabel>Equipamento da Unidade</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value || undefined}>
-                              <FormControl><SelectTrigger><SelectValue placeholder="Opcional: Selecione um equipamento da unidade" /></SelectTrigger></FormControl>
+                              <FormControl><SelectTrigger><SelectValue placeholder="Selecione um equipamento" /></SelectTrigger></FormControl>
                               <SelectContent className="max-h-[300px]">
-                                {getEquipmentByUBS(userUbsList.find(u => u === form.watch('ubs_name')) || '').map((eq) => (
+                                {ubsEquipments.map((eq) => (
                                   <SelectItem key={eq.id} value={`${eq.brand} ${eq.model} - PAT: ${eq.patrimonyNumber}`}>
                                     {eq.type}: {eq.brand} {eq.model} (Pat: {eq.patrimonyNumber})
                                   </SelectItem>
@@ -246,6 +246,14 @@ const SolicitarSuportePage: React.FC = () => {
                               <SelectItem value="Eletro">Eletro</SelectItem>
                             </SelectContent>
                           </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+
+                      <FormField control={form.control} name="location" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Departamento/Setor *</FormLabel>
+                          <FormControl><Input placeholder="Ex: Recepção, Sala 1" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
