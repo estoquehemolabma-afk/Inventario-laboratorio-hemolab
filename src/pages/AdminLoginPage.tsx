@@ -76,6 +76,13 @@ const AdminLoginPage: React.FC = () => {
           });
           return;
         }
+
+        // Wait briefly for the user to be created, then assign admin role
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user) {
+          await supabase.rpc('assign_admin_role', { target_user_id: sessionData.session.user.id });
+        }
+
         toast({ title: 'Cadastro realizado!', description: 'Verifique seu e-mail para confirmar a conta.' });
       }
     } finally {
