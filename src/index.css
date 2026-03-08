@@ -99,14 +99,14 @@
     --input: 215 20% 20%;
     --ring: 155 37% 22%;
 
-    --sidebar-background: 215 30% 6%;
-    --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 210 80% 55%;
+    --sidebar-background: 155 37% 8%;
+    --sidebar-foreground: 150 20% 90%;
+    --sidebar-primary: 2 65% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 12%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 215 20% 15%;
-    --sidebar-ring: 210 80% 55%;
+    --sidebar-accent: 155 30% 14%;
+    --sidebar-accent-foreground: 150 20% 90%;
+    --sidebar-border: 155 25% 15%;
+    --sidebar-ring: 2 65% 55%;
   }
 }
 
