@@ -10,10 +10,12 @@ import {
   Menu,
   Activity,
   Headphones,
-  BarChart3
+  BarChart3,
+  LogOut
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
