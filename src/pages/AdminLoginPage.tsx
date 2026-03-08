@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn, signUp, user, isAdmin, loading: authLoading } = useAuth();
+  const { signIn, signUp, user, isAdmin, roleLoaded, loading: authLoading } = useAuth();
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
