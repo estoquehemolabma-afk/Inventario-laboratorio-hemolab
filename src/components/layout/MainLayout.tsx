@@ -3,6 +3,7 @@ import Sidebar from './Sidebar';
 import { motion } from 'framer-motion';
 import { Menu, Bell, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
