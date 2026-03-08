@@ -93,6 +93,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  onClick={() => {
+                    // Close sidebar on mobile after navigation
+                    if (window.innerWidth < 1024) onToggle();
+                  }}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
                     isActive 
