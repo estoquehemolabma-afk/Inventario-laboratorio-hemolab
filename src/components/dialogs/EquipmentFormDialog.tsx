@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,10 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { useInventory } from '@/contexts/InventoryContext';
-import { Equipment, ConservationState, conservationStateLabels, getEquipmentTypeLabel } from '@/types/inventory';
-import { HardDrive, Plus } from 'lucide-react';
+import { Equipment, ConservationState, conservationStateLabels } from '@/types/inventory';
+import { HardDrive, ChevronsUpDown, Check, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { cidadesMA, gruposEquipamento } from '@/data/cidadesMA';
 
 const conservationStates: ConservationState[] = ['Funcionando', 'Manutenção', 'Inexistente'];
 
@@ -22,25 +26,24 @@ interface EquipmentFormDialogProps {
   editingEquipment?: Equipment;
 }
 
+const equipmentFormSchema = z.object({
+  type: z.string().min(1, 'Grupo é obrigatório'),
+  brand: z.string().min(1, 'Marca é obrigatória').max(50),
+  model: z.string().min(1, 'Modelo é obrigatório').max(50),
+  serialNumber: z.string().min(1, 'Número de série é obrigatório').max(50),
+  patrimonyNumber: z.string().min(1, 'Patrimônio é obrigatório').max(50),
+  location: z.string().min(1, 'Departamento é obrigatório').max(100),
+  municipality: z.string().min(1, 'Município é obrigatório').max(100),
+  conservationState: z.enum(['Funcionando', 'Manutenção', 'Inexistente'] as const),
+  installationDate: z.string().min(1, 'Data de instalação é obrigatória'),
+  observations: z.string().max(500).optional(),
+});
+
+type EquipmentFormData = z.infer<typeof equipmentFormSchema>;
+
 const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenChange, ubsId, editingEquipment }) => {
-  const { addEquipment, updateEquipment, equipmentTypes, addEquipmentType } = useInventory();
-  const [showNewType, setShowNewType] = useState(false);
-  const [newTypeName, setNewTypeName] = useState('');
-
-  const equipmentFormSchema = z.object({
-    type: z.string().min(1, 'Grupo é obrigatório'),
-    brand: z.string().min(1, 'Marca é obrigatória').max(50),
-    model: z.string().min(1, 'Modelo é obrigatório').max(50),
-    serialNumber: z.string().min(1, 'Número de série é obrigatório').max(50),
-    patrimonyNumber: z.string().min(1, 'Patrimônio é obrigatório').max(50),
-    location: z.string().min(1, 'Departamento é obrigatório').max(100),
-    municipality: z.string().min(1, 'Município é obrigatório').max(100),
-    conservationState: z.enum(['Funcionando', 'Manutenção', 'Inexistente'] as const),
-    installationDate: z.string().min(1, 'Data de instalação é obrigatória'),
-    observations: z.string().max(500).optional(),
-  });
-
-  type EquipmentFormData = z.infer<typeof equipmentFormSchema>;
+  const { addEquipment, updateEquipment } = useInventory();
+  const [cityOpen, setCityOpen] = useState(false);
 
   const form = useForm<EquipmentFormData>({
     resolver: zodResolver(equipmentFormSchema),
@@ -58,23 +61,10 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
     },
   });
 
-  const handleAddNewType = async () => {
-    if (!newTypeName.trim()) return;
-    try {
-      await addEquipmentType(newTypeName.trim());
-      form.setValue('type', newTypeName.trim());
-      setNewTypeName('');
-      setShowNewType(false);
-      toast.success('Novo grupo adicionado!');
-    } catch (error) {
-      toast.error('Erro ao adicionar grupo. Verifique se já não existe.');
-    }
-  };
-
   const onSubmit = async (data: EquipmentFormData) => {
     try {
       if (editingEquipment) {
-        await updateEquipment(editingEquipment.id, { ...data, municipality: data.municipality });
+        await updateEquipment(editingEquipment.id, { ...data });
         toast.success('Equipamento atualizado com sucesso!');
       } else {
         await addEquipment({
@@ -109,34 +99,20 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
+              {/* Grupo - usando os mesmos grupos de solicitar suporte */}
               <FormField control={form.control} name="type" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Grupo</FormLabel>
-                  {!showNewType ? (
-                    <div className="space-y-2">
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Selecione o grupo" /></SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {equipmentTypes.map((type) => (
-                            <SelectItem key={type} value={type}>{getEquipmentTypeLabel(type)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => setShowNewType(true)}>
-                        <Plus className="w-3 h-3 mr-1" /> Novo Grupo
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Input placeholder="Nome do novo grupo" value={newTypeName} onChange={(e) => setNewTypeName(e.target.value)} />
-                      <div className="flex gap-2">
-                        <Button type="button" size="sm" onClick={handleAddNewType} className="flex-1">Adicionar</Button>
-                        <Button type="button" variant="outline" size="sm" onClick={() => setShowNewType(false)}>Cancelar</Button>
-                      </div>
-                    </div>
-                  )}
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue placeholder="Selecione o grupo" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {gruposEquipamento.map((grupo) => (
+                        <SelectItem key={grupo} value={grupo}>{grupo}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -183,10 +159,49 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
                   <FormMessage />
                 </FormItem>
               )} />
+
+              {/* Município com busca - cidades do MA */}
               <FormField control={form.control} name="municipality" render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Município</FormLabel>
-                  <FormControl><Input placeholder="Ex: São Paulo, Recife" {...field} /></FormControl>
+                  <Popover open={cityOpen} onOpenChange={setCityOpen}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={cityOpen}
+                          className={cn("w-full justify-between font-normal h-10", !field.value && "text-muted-foreground")}
+                        >
+                          {field.value || "Pesquisar município..."}
+                          <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Digite para buscar..." />
+                        <CommandList>
+                          <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
+                          <CommandGroup>
+                            {cidadesMA.map((cidade) => (
+                              <CommandItem
+                                key={cidade}
+                                value={cidade}
+                                onSelect={() => {
+                                  field.onChange(cidade);
+                                  setCityOpen(false);
+                                }}
+                              >
+                                <Check className={cn("mr-2 h-4 w-4", field.value === cidade ? "opacity-100" : "opacity-0")} />
+                                {cidade}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )} />
