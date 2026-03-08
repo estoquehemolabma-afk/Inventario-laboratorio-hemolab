@@ -430,7 +430,7 @@ const RelatoriosSuportePage: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Top 10 UBS com mais Chamados</CardTitle>
+              <CardTitle className="text-lg">Top 10 Unidades com mais Chamados</CardTitle>
               <CardDescription>Unidades com maior demanda de suporte</CardDescription>
             </CardHeader>
             <CardContent>
