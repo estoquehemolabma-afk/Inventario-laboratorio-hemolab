@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity, ArrowLeft, Clock, CheckCircle2, Wrench, XCircle, Search } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle2, Wrench, XCircle, Search } from 'lucide-react';
+import logoGota from '@/assets/logogota.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
