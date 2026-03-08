@@ -11,6 +11,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { profile } = useAuth();
 
   return (
     <div className="min-h-screen bg-background flex">
