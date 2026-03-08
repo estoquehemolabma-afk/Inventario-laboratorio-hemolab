@@ -16,6 +16,7 @@ import {
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import logoGota from '@/assets/logogota.png';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -62,9 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             <motion.div className="flex items-center gap-3" animate={{ opacity: isOpen ? 1 : 0 }}>
               {isOpen && (
                 <>
-                  <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-                    <Activity className="w-6 h-6 text-white" />
-                  </div>
+                  <img src={logoGota} alt="Hemolab Logo" className="w-10 h-10 object-contain" />
                   <div>
                     <h1 className="font-display font-bold text-sidebar-foreground text-lg">
                       Inventário
