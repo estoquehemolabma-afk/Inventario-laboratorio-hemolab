@@ -78,11 +78,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           setTimeout(() => {
             fetchProfile(session.user.id).then(setProfile);
-            fetchRole(session.user.id).then(setIsAdmin);
+            fetchRole(session.user.id).then((val) => { setIsAdmin(val); setRoleLoaded(true); });
           }, 0);
         } else {
           setProfile(null);
           setIsAdmin(false);
+          setRoleLoaded(true);
         }
       }
     );
