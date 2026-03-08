@@ -188,27 +188,18 @@ const SolicitarSuportePage: React.FC = () => {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="font-semibold text-foreground">Informações da Unidade</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="ubs_name" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome da Unidade *</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || undefined}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione a unidade" /></SelectTrigger></FormControl>
-                            <SelectContent className="max-h-[300px]">
-                              {userUbsList.map((ubs) => (<SelectItem key={ubs} value={ubs}>{ubs}</SelectItem>))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="location" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Local/Setor *</FormLabel>
-                          <FormControl><Input placeholder="Ex: Recepção, Sala 1" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </div>
+                    <FormField control={form.control} name="ubs_name" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome da Unidade *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}>
+                          <FormControl><SelectTrigger><SelectValue placeholder="Selecione a unidade" /></SelectTrigger></FormControl>
+                          <SelectContent className="max-h-[300px]">
+                            {userUbsList.map((ubs) => (<SelectItem key={ubs} value={ubs}>{ubs}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                   </div>
                     <div className="space-y-4">
                     <h3 className="font-semibold text-foreground">Detalhes do Problema</h3>
