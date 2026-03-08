@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn, signUp, user, isAdmin, loading: authLoading } = useAuth();
+  const { signIn, signUp, user, isAdmin, roleLoaded, loading: authLoading } = useAuth();
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -25,14 +25,14 @@ const AdminLoginPage: React.FC = () => {
   const [inviteCode, setInviteCode] = useState('');
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && roleLoaded) {
       if (isAdmin) {
         navigate('/');
       } else {
         navigate('/solicitar-suporte');
       }
     }
-  }, [user, isAdmin, authLoading, navigate]);
+  }, [user, isAdmin, roleLoaded, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +52,7 @@ const AdminLoginPage: React.FC = () => {
           return;
         }
         toast({ title: 'Login realizado com sucesso!' });
-        navigate('/');
+        // Navigation handled by useEffect after role loads
       } else {
         if (!fullName.trim()) {
           toast({ title: 'Nome obrigatório', description: 'Informe seu nome completo.', variant: 'destructive' });

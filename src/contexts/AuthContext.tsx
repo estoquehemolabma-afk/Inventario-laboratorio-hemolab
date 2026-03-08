@@ -18,6 +18,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   isAdmin: boolean;
+  roleLoaded: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string, phone?: string, ubsNames?: string[]) => Promise<{ error: Error | null }>;
@@ -33,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [roleLoaded, setRoleLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
@@ -76,11 +78,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           setTimeout(() => {
             fetchProfile(session.user.id).then(setProfile);
-            fetchRole(session.user.id).then(setIsAdmin);
+            fetchRole(session.user.id).then((val) => { setIsAdmin(val); setRoleLoaded(true); });
           }, 0);
         } else {
           setProfile(null);
           setIsAdmin(false);
+          setRoleLoaded(true);
         }
       }
     );
@@ -91,7 +94,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id).then(setProfile);
-        fetchRole(session.user.id).then(setIsAdmin);
+        fetchRole(session.user.id).then((val) => { setIsAdmin(val); setRoleLoaded(true); });
+      } else {
+        setRoleLoaded(true);
       }
       setLoading(false);
     });
@@ -155,6 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       session,
       profile,
       isAdmin,
+      roleLoaded,
       loading,
       signIn,
       signUp,
