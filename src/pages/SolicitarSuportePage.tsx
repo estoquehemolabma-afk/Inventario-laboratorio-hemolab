@@ -31,9 +31,10 @@ const SolicitarSuportePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, loading: authLoading, signOut } = useAuth();
-  const { getEquipmentByUBS, equipmentTypes } = useInventory();
+  const { getEquipmentByUBS, equipmentList, ubsList } = useInventory();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
+  const [ubsEquipments, setUbsEquipments] = useState<any[]>([]);
 
   useEffect(() => { if (!authLoading && !user) navigate('/auth'); }, [user, authLoading, navigate]);
 
@@ -45,6 +46,39 @@ const SolicitarSuportePage: React.FC = () => {
   });
 
   useEffect(() => { if (userUbsList.length === 1) form.setValue('ubs_name', userUbsList[0]); }, [profile, form, userUbsList]);
+
+  // When UBS changes, load its equipment
+  const selectedUbsName = form.watch('ubs_name');
+  useEffect(() => {
+    if (selectedUbsName) {
+      // Find UBS id by name
+      const ubs = ubsList.find(u => u.name === selectedUbsName);
+      if (ubs) {
+        const eqs = equipmentList.filter(e => e.ubsId === ubs.id && e.isActive);
+        setUbsEquipments(eqs);
+      } else {
+        setUbsEquipments([]);
+      }
+      // Reset equipment selection when UBS changes
+      form.setValue('equipment_info', '');
+      form.setValue('location', '');
+      form.setValue('request_type', '');
+    } else {
+      setUbsEquipments([]);
+    }
+  }, [selectedUbsName, ubsList, equipmentList]);
+
+  // When equipment is selected, auto-fill location and group
+  const selectedEquipmentInfo = form.watch('equipment_info');
+  useEffect(() => {
+    if (selectedEquipmentInfo && selectedEquipmentInfo !== 'Outro (Não listado)') {
+      const eq = ubsEquipments.find(e => `${e.brand} ${e.model} - PAT: ${e.patrimonyNumber}` === selectedEquipmentInfo);
+      if (eq) {
+        form.setValue('location', eq.location || '');
+        form.setValue('request_type', eq.type || '');
+      }
+    }
+  }, [selectedEquipmentInfo, ubsEquipments]);
 
   const onSubmit = async (data: FormData) => {
     if (!profile) return;
