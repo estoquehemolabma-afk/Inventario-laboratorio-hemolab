@@ -10,10 +10,12 @@ import {
   Menu,
   Activity,
   Headphones,
-  BarChart3
+  BarChart3,
+  LogOut
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -32,6 +34,7 @@ const navItems = [
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation();
+  const { signOut, profile } = useAuth();
 
   return (
     <>
@@ -106,11 +109,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           </nav>
 
           {isOpen && (
-            <div className="p-4 border-t border-sidebar-border">
+            <div className="p-4 border-t border-sidebar-border space-y-3">
               <div className="bg-sidebar-accent rounded-xl p-4">
-                <p className="text-xs text-sidebar-foreground/60 mb-1">Versão</p>
-                <p className="text-sm font-medium text-sidebar-foreground">2.0.0 - 2025</p>
+                <p className="text-xs text-sidebar-foreground/60 mb-1">Logado como</p>
+                <p className="text-sm font-medium text-sidebar-foreground truncate">
+                  {profile?.full_name || 'Admin'}
+                </p>
               </div>
+              <button
+                onClick={signOut}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
+              >
+                <LogOut className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium">Sair</span>
+              </button>
+            </div>
+          )}
+          {!isOpen && (
+            <div className="p-4 border-t border-sidebar-border flex justify-center">
+              <button
+                onClick={signOut}
+                className="p-2 rounded-lg text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                title="Sair"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
             </div>
           )}
         </div>

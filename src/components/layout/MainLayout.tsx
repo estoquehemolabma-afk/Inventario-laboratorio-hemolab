@@ -3,6 +3,7 @@ import Sidebar from './Sidebar';
 import { motion } from 'framer-motion';
 import { Menu, Bell, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { profile } = useAuth();
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -38,7 +40,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               
               <div className="flex items-center gap-3 pl-3 border-l border-border">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-foreground">Admin</p>
+                  <p className="text-sm font-medium text-foreground">{profile?.full_name || 'Admin'}</p>
                   <p className="text-xs text-muted-foreground">Administrador</p>
                 </div>
                 <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center">
