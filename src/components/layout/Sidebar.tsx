@@ -63,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             <motion.div className="flex items-center gap-3" animate={{ opacity: isOpen ? 1 : 0 }}>
               {isOpen && (
                 <>
-                  <img src={logoGota} alt="Hemolab Logo" className="w-10 h-10 object-contain rounded-full ring-2 ring-white/80 bg-white p-0.5" />
+                  <img src={logoGota} alt="Hemolab Logo" className="w-10 h-10 object-contain" style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.8))' }} />
                   <div>
                     <h1 className="font-display font-bold text-sidebar-foreground text-lg">
                       Inventário
