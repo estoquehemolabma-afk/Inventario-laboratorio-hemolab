@@ -26,9 +26,13 @@ const AdminLoginPage: React.FC = () => {
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/');
+      if (isAdmin) {
+        navigate('/');
+      } else {
+        navigate('/solicitar-suporte');
+      }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
