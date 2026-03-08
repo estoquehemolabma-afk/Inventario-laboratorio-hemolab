@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Download, Building2, Activity, CheckCircle, XCircle, Monitor, Printer, Laptop } from 'lucide-react';
+import { FileText, Download, Building2, Activity, CheckCircle, XCircle, Package } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,17 +12,32 @@ const RelatoriosPage: React.FC = () => {
   const { ubsList, getEquipmentByUBS, equipmentList } = useInventory();
   const [selectedUBS, setSelectedUBS] = useState<string>('');
 
-  const stats = {
-    functioningTotal: equipmentList.filter(eq => eq.conservationState === 'Funcionando').length,
-    functioningPCs: equipmentList.filter(eq => eq.type === 'PC' && eq.conservationState === 'Funcionando').length,
-    functioningPrinters: equipmentList.filter(eq => eq.type === 'Impressora' && eq.conservationState === 'Funcionando').length,
-    functioningNotebooks: equipmentList.filter(eq => eq.type === 'Notebook' && eq.conservationState === 'Funcionando').length,
-    deficitTotal: equipmentList.filter(eq => eq.conservationState === 'Inexistente').length,
-    deficitPCs: equipmentList.filter(eq => eq.type === 'PC' && eq.conservationState === 'Inexistente').length,
-    deficitPrinters: equipmentList.filter(eq => eq.type === 'Impressora' && eq.conservationState === 'Inexistente').length,
-    deficitNotebooks: equipmentList.filter(eq => eq.type === 'Notebook' && eq.conservationState === 'Inexistente').length,
-    grandTotal: equipmentList.filter(eq => eq.conservationState === 'Funcionando' || eq.conservationState === 'Inexistente').length
-  };
+  const groups = useMemo(() => {
+    const types = new Set<string>();
+    equipmentList.forEach(eq => types.add(eq.type));
+    return Array.from(types).sort();
+  }, [equipmentList]);
+
+  const stats = useMemo(() => {
+    const functioning: Record<string, number> = {};
+    const deficit: Record<string, number> = {};
+    let functioningTotal = 0;
+    let deficitTotal = 0;
+
+    groups.forEach(g => { functioning[g] = 0; deficit[g] = 0; });
+
+    equipmentList.forEach(eq => {
+      if (eq.conservationState === 'Funcionando') {
+        functioning[eq.type] = (functioning[eq.type] || 0) + 1;
+        functioningTotal++;
+      } else if (eq.conservationState === 'Inexistente') {
+        deficit[eq.type] = (deficit[eq.type] || 0) + 1;
+        deficitTotal++;
+      }
+    });
+
+    return { functioning, deficit, functioningTotal, deficitTotal, grandTotal: functioningTotal + deficitTotal };
+  }, [equipmentList, groups]);
 
   const handleGenerateReport = () => {
     if (!selectedUBS) { toast.error('Selecione uma unidade para gerar o relatório'); return; }
@@ -58,18 +73,15 @@ const RelatoriosPage: React.FC = () => {
                   <span className="text-xl font-bold text-success">{stats.functioningTotal}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-card/50 p-3 rounded border border-success/10">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1"><Monitor className="w-4 h-4" /><span className="text-xs">Computadores</span></div>
-                    <span className="text-lg font-bold text-foreground">{stats.functioningPCs}</span>
-                  </div>
-                  <div className="bg-card/50 p-3 rounded border border-success/10">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1"><Printer className="w-4 h-4" /><span className="text-xs">Impressoras</span></div>
-                    <span className="text-lg font-bold text-foreground">{stats.functioningPrinters}</span>
-                  </div>
-                  <div className="bg-card/50 p-3 rounded border border-success/10">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1"><Laptop className="w-4 h-4" /><span className="text-xs">Notebooks</span></div>
-                    <span className="text-lg font-bold text-foreground">{stats.functioningNotebooks}</span>
-                  </div>
+                  {groups.map(group => (
+                    <div key={group} className="bg-card/50 p-3 rounded border border-success/10">
+                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                        <Package className="w-4 h-4" />
+                        <span className="text-xs">{group}</span>
+                      </div>
+                      <span className="text-lg font-bold text-foreground">{stats.functioning[group] || 0}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -82,18 +94,15 @@ const RelatoriosPage: React.FC = () => {
                   <span className="text-xl font-bold text-destructive">{stats.deficitTotal}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-card/50 p-3 rounded border border-destructive/10">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1"><Monitor className="w-4 h-4" /><span className="text-xs">Computadores</span></div>
-                    <span className="text-lg font-bold text-foreground">{stats.deficitPCs}</span>
-                  </div>
-                  <div className="bg-card/50 p-3 rounded border border-destructive/10">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1"><Printer className="w-4 h-4" /><span className="text-xs">Impressoras</span></div>
-                    <span className="text-lg font-bold text-foreground">{stats.deficitPrinters}</span>
-                  </div>
-                  <div className="bg-card/50 p-3 rounded border border-destructive/10">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1"><Laptop className="w-4 h-4" /><span className="text-xs">Notebooks</span></div>
-                    <span className="text-lg font-bold text-foreground">{stats.deficitNotebooks}</span>
-                  </div>
+                  {groups.map(group => (
+                    <div key={group} className="bg-card/50 p-3 rounded border border-destructive/10">
+                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                        <Package className="w-4 h-4" />
+                        <span className="text-xs">{group}</span>
+                      </div>
+                      <span className="text-lg font-bold text-foreground">{stats.deficit[group] || 0}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
