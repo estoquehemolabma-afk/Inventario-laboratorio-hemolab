@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn, signUp, user, loading: authLoading } = useAuth();
+  const { signIn, signUp, user, isAdmin, loading: authLoading } = useAuth();
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -26,9 +26,13 @@ const AdminLoginPage: React.FC = () => {
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/');
+      if (isAdmin) {
+        navigate('/');
+      } else {
+        navigate('/solicitar-suporte');
+      }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +80,13 @@ const AdminLoginPage: React.FC = () => {
           });
           return;
         }
+
+        // Wait briefly for the user to be created, then assign admin role
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user) {
+          await supabase.rpc('assign_admin_role', { target_user_id: sessionData.session.user.id });
+        }
+
         toast({ title: 'Cadastro realizado!', description: 'Verifique seu e-mail para confirmar a conta.' });
       }
     } finally {
