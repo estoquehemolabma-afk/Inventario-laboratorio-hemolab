@@ -162,9 +162,7 @@ const SolicitarSuportePage: React.FC = () => {
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-              <Activity className="w-6 h-6 text-white" />
-            </div>
+            <img src={logoGota} alt="Hemolab Logo" className="w-10 h-10 object-contain" style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.8))' }} />
             <div>
               <h1 className="font-display font-bold text-lg">Inventário</h1>
               <p className="text-xs text-muted-foreground">Solicitação de Suporte</p>
