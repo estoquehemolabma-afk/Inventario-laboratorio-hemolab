@@ -201,6 +201,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
     if (equipment.installationDate !== undefined) updateData.installation_date = equipment.installationDate || null;
     if (equipment.observations !== undefined) updateData.observations = equipment.observations;
+    if (equipment.value !== undefined) updateData.value = equipment.value;
 
     const { error } = await supabase.from('equipment').update(updateData).eq('id', id);
     if (error) throw error;

@@ -26,6 +26,7 @@ export interface Equipment {
   isActive: boolean;
   deactivationReason: string | null;
   maintenanceLogs: MaintenanceLog[];
+  value: number;
   createdAt: string;
   updatedAt: string;
 }
