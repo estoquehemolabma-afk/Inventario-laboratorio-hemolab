@@ -64,9 +64,10 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
   });
 
   const onSubmit = async (data: EquipmentFormData) => {
+    const parsedValue = parseFloat(data.value?.replace(',', '.') || '0') || 0;
     try {
       if (editingEquipment) {
-        await updateEquipment(editingEquipment.id, { ...data });
+        await updateEquipment(editingEquipment.id, { ...data, value: parsedValue });
         toast.success('Equipamento atualizado com sucesso!');
       } else {
         await addEquipment({
@@ -75,6 +76,7 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
           location: data.location, municipality: data.municipality,
           conservationState: data.conservationState,
           installationDate: data.installationDate, ubsId, observations: data.observations || '',
+          value: parsedValue,
         });
         toast.success('Equipamento cadastrado com sucesso!');
       }
