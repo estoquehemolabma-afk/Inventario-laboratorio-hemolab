@@ -37,6 +37,7 @@ const equipmentFormSchema = z.object({
   conservationState: z.enum(['Funcionando', 'Manutenção', 'Inexistente'] as const),
   installationDate: z.string().min(1, 'Data de instalação é obrigatória'),
   observations: z.string().max(500).optional(),
+  value: z.string().optional(),
 });
 
 type EquipmentFormData = z.infer<typeof equipmentFormSchema>;
