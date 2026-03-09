@@ -78,7 +78,7 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
       head: [['Tipo', 'Marca', 'Modelo', 'Nº Série', 'Patrimônio', 'Estado']],
       body: tableData,
       theme: 'grid',
-      headStyles: { fillColor: [100, 116, 139], textColor: [255, 255, 255], fontSize: 9, fontStyle: 'bold' },
+      headStyles: { fillColor: [46, 125, 50], textColor: [255, 255, 255], fontSize: 9, fontStyle: 'bold' },
       bodyStyles: { fontSize: 8, textColor: [0, 0, 0] },
       alternateRowStyles: { fillColor: [248, 250, 252] },
       columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 25 }, 2: { cellWidth: 30 }, 3: { cellWidth: 35 }, 4: { cellWidth: 35 }, 5: { cellWidth: 25 } },
