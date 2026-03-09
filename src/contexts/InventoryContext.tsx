@@ -180,6 +180,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
       conservation_state: (equipment.conservationState === 'Inexistente' ? 'Sucata' : equipment.conservationState) as any,
       installation_date: equipment.installationDate || null,
       observations: equipment.observations,
+      value: equipment.value || 0,
     });
     if (error) throw error;
     await refreshData();
