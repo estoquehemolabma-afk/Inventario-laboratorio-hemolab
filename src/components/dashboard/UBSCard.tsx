@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Building2, MapPin, User, ChevronRight } from 'lucide-react';
+import { Building2, MapPin, User, ChevronRight, DollarSign } from 'lucide-react';
+import { useInventory } from '@/contexts/InventoryContext';
 import { UBSSummary } from '@/types/inventory';
 import { getEquipmentTypeLabel } from '@/types/inventory';
 import { getEquipmentIcon } from '@/lib/equipmentUtils';
