@@ -20,7 +20,6 @@ const UBSCard: React.FC<UBSCardProps> = ({ summary, index }) => {
   const ubsEquipment = getEquipmentByUBS(ubs.id).filter(eq => eq.isActive);
   const totalValue = ubsEquipment.reduce((acc, eq) => acc + (eq.value || 0), 0);
   const formattedValue = totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  const { ubs, totalEquipment, equipmentByType, equipmentByState } = summary;
 
   return (
     <motion.div
