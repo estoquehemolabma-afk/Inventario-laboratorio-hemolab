@@ -1,0 +1,1 @@
+ALTER TABLE public.equipment ADD COLUMN value numeric DEFAULT 0;
