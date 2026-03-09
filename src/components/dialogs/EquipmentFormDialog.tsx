@@ -59,6 +59,7 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
       conservationState: editingEquipment?.conservationState || 'Funcionando',
       installationDate: editingEquipment?.installationDate || new Date().toISOString().split('T')[0],
       observations: editingEquipment?.observations || '',
+      value: editingEquipment?.value?.toString() || '0',
     },
   });
 

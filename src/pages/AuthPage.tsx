@@ -186,7 +186,7 @@ const AuthPage: React.FC = () => {
                         placeholder="(00) 00000-0000"
                         className="pl-10"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => setPhone(formatPhone(e.target.value))}
                       />
                     </div>
                   </div>

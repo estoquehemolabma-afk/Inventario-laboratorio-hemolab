@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, Plus, Search, Trash2 } from 'lucide-react';
+import { Building2, Plus, Search, Trash2, Pencil } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useInventory } from '@/contexts/InventoryContext';
 import UBSFormDialog from '@/components/dialogs/UBSFormDialog';
+import { UBS } from '@/types/inventory';
 import { toast } from 'sonner';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -17,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 const UnidadesPage: React.FC = () => {
   const { ubsList, deleteUBS, getEquipmentByUBS } = useInventory();
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingUBS, setEditingUBS] = useState<UBS | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -30,6 +32,16 @@ const UnidadesPage: React.FC = () => {
     if (deleteId) { deleteUBS(deleteId); setDeleteId(null); toast.success('Unidade removida com sucesso!'); }
   };
 
+  const handleEdit = (ubs: UBS) => {
+    setEditingUBS(ubs);
+    setShowAddDialog(true);
+  };
+
+  const handleDialogClose = (open: boolean) => {
+    setShowAddDialog(open);
+    if (!open) setEditingUBS(undefined);
+  };
+
   return (
     <MainLayout>
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
@@ -38,7 +50,7 @@ const UnidadesPage: React.FC = () => {
             <h1 className="text-3xl font-display font-bold text-foreground">Unidades</h1>
             <p className="text-muted-foreground mt-1">Gerencie as unidades cadastradas no sistema</p>
           </div>
-          <Button onClick={() => setShowAddDialog(true)} className="gradient-primary text-white border-0">
+          <Button onClick={() => { setEditingUBS(undefined); setShowAddDialog(true); }} className="gradient-primary text-white border-0">
             <Plus className="w-4 h-4 mr-2" /> Nova Unidade
           </Button>
         </div>
@@ -64,9 +76,14 @@ const UnidadesPage: React.FC = () => {
                       <h3 className="font-medium text-foreground">{ubs.name}</h3>
                       <p className="text-sm text-muted-foreground">{ubs.address}</p>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(ubs.id)} className="text-muted-foreground hover:text-destructive h-8 w-8">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(ubs)} className="text-muted-foreground hover:text-primary h-8 w-8">
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(ubs.id)} className="text-muted-foreground hover:text-destructive h-8 w-8">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="text-sm mt-2">
                     <span className="text-muted-foreground">Responsável:</span> {ubs.responsible}
@@ -102,6 +119,9 @@ const UnidadesPage: React.FC = () => {
                   <TableCell>{ubs.responsible}</TableCell>
                   <TableCell>{getEquipmentByUBS(ubs.id).length}</TableCell>
                   <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(ubs)} className="text-muted-foreground hover:text-primary">
+                      <Pencil className="w-4 h-4" />
+                    </Button>
                     <Button variant="ghost" size="icon" onClick={() => setDeleteId(ubs.id)} className="text-muted-foreground hover:text-destructive">
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -120,7 +140,7 @@ const UnidadesPage: React.FC = () => {
         </div>
       </motion.div>
 
-      <UBSFormDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
+      <UBSFormDialog open={showAddDialog} onOpenChange={handleDialogClose} editingUBS={editingUBS} />
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
