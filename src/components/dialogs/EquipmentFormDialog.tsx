@@ -37,6 +37,7 @@ const equipmentFormSchema = z.object({
   conservationState: z.enum(['Funcionando', 'Manutenção', 'Inexistente'] as const),
   installationDate: z.string().min(1, 'Data de instalação é obrigatória'),
   observations: z.string().max(500).optional(),
+  value: z.string().optional(),
 });
 
 type EquipmentFormData = z.infer<typeof equipmentFormSchema>;
@@ -58,13 +59,15 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
       conservationState: editingEquipment?.conservationState || 'Funcionando',
       installationDate: editingEquipment?.installationDate || new Date().toISOString().split('T')[0],
       observations: editingEquipment?.observations || '',
+      value: editingEquipment?.value?.toString() || '0',
     },
   });
 
   const onSubmit = async (data: EquipmentFormData) => {
+    const parsedValue = parseFloat(data.value?.replace(',', '.') || '0') || 0;
     try {
       if (editingEquipment) {
-        await updateEquipment(editingEquipment.id, { ...data });
+        await updateEquipment(editingEquipment.id, { ...data, value: parsedValue });
         toast.success('Equipamento atualizado com sucesso!');
       } else {
         await addEquipment({
@@ -73,6 +76,7 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
           location: data.location, municipality: data.municipality,
           conservationState: data.conservationState,
           installationDate: data.installationDate, ubsId, observations: data.observations || '',
+          value: parsedValue,
         });
         toast.success('Equipamento cadastrado com sucesso!');
       }
@@ -207,9 +211,14 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
               )} />
             </div>
 
-            <FormField control={form.control} name="installationDate" render={({ field }) => (
-              <FormItem><FormLabel>Data de Instalação</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField control={form.control} name="installationDate" render={({ field }) => (
+                <FormItem><FormLabel>Data de Instalação</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="value" render={({ field }) => (
+                <FormItem><FormLabel>Valor (R$)</FormLabel><FormControl><Input type="text" placeholder="0,00" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+            </div>
 
             <FormField control={form.control} name="observations" render={({ field }) => (
               <FormItem>

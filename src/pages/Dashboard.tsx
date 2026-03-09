@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { Building2, CheckCircle, AlertTriangle, Package } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import StatCard from '@/components/dashboard/StatCard';
@@ -27,9 +27,9 @@ const Dashboard: React.FC = () => {
     return true;
   });
 
+  const totalEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.totalEquipment, 0);
   const operationalEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.operational, 0);
   const maintenanceEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.maintenance, 0);
-  const deficitEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.decommissioned, 0);
 
   return (
     <MainLayout>
@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard title="Total de Unidades" value={filteredSummaries.length} icon={Building2} variant="default" delay={0} />
-        <StatCard title="Déficit" value={deficitEquipment} icon={XCircle} variant="destructive" delay={0.1} />
+        <StatCard title="Total de Equipamentos" value={totalEquipment} icon={Package} variant="default" delay={0.1} />
         <StatCard title="Funcionando" value={operationalEquipment} icon={CheckCircle} variant="success" delay={0.2} />
         <StatCard title="Em Manutenção" value={maintenanceEquipment} icon={AlertTriangle} variant="warning" delay={0.3} />
       </div>

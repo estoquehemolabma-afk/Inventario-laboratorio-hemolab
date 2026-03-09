@@ -6,8 +6,8 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Header
-  doc.setFillColor(30, 64, 124);
+  // Header - Green
+  doc.setFillColor(34, 139, 34);
   doc.rect(0, 0, pageWidth, 40, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
@@ -61,7 +61,7 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
   Object.entries(equipmentByLocation).forEach(([location, items]) => {
     if (currentY > 250) { doc.addPage(); currentY = 20; }
 
-    doc.setFillColor(30, 64, 124);
+    doc.setFillColor(34, 139, 34);
     doc.rect(14, currentY - 5, pageWidth - 28, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(10);
@@ -78,7 +78,7 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
       head: [['Tipo', 'Marca', 'Modelo', 'Nº Série', 'Patrimônio', 'Estado']],
       body: tableData,
       theme: 'grid',
-      headStyles: { fillColor: [100, 116, 139], textColor: [255, 255, 255], fontSize: 9, fontStyle: 'bold' },
+      headStyles: { fillColor: [46, 125, 50], textColor: [255, 255, 255], fontSize: 9, fontStyle: 'bold' },
       bodyStyles: { fontSize: 8, textColor: [0, 0, 0] },
       alternateRowStyles: { fillColor: [248, 250, 252] },
       columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 25 }, 2: { cellWidth: 30 }, 3: { cellWidth: 35 }, 4: { cellWidth: 35 }, 5: { cellWidth: 25 } },

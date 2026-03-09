@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, Phone, KeyRound } from 'lucide-react';
+import { formatPhone } from '@/lib/phoneMask';
 import logoGota from '@/assets/logogota.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -170,7 +171,7 @@ const AdminLoginPage: React.FC = () => {
                         placeholder="(00) 00000-0000"
                         className="pl-10"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => setPhone(formatPhone(e.target.value))}
                       />
                     </div>
                   </div>

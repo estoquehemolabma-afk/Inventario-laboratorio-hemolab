@@ -85,6 +85,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         isActive: eq.is_active !== false,
         deactivationReason: eq.deactivation_reason || null,
         maintenanceLogs: [],
+        value: eq.value || 0,
         createdAt: eq.created_at,
         updatedAt: eq.updated_at,
       })));
@@ -179,6 +180,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
       conservation_state: (equipment.conservationState === 'Inexistente' ? 'Sucata' : equipment.conservationState) as any,
       installation_date: equipment.installationDate || null,
       observations: equipment.observations,
+      value: equipment.value || 0,
     });
     if (error) throw error;
     await refreshData();
@@ -199,6 +201,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
     if (equipment.installationDate !== undefined) updateData.installation_date = equipment.installationDate || null;
     if (equipment.observations !== undefined) updateData.observations = equipment.observations;
+    if (equipment.value !== undefined) updateData.value = equipment.value;
 
     const { error } = await supabase.from('equipment').update(updateData).eq('id', id);
     if (error) throw error;

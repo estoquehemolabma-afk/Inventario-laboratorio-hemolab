@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Building2, MapPin, User, ChevronRight } from 'lucide-react';
+import { Building2, MapPin, User, ChevronRight, DollarSign } from 'lucide-react';
+import { useInventory } from '@/contexts/InventoryContext';
 import { UBSSummary } from '@/types/inventory';
 import { getEquipmentTypeLabel } from '@/types/inventory';
 import { getEquipmentIcon } from '@/lib/equipmentUtils';
@@ -13,7 +14,12 @@ interface UBSCardProps {
 
 const UBSCard: React.FC<UBSCardProps> = ({ summary, index }) => {
   const navigate = useNavigate();
+  const { getEquipmentByUBS } = useInventory();
   const { ubs, totalEquipment, equipmentByType, equipmentByState } = summary;
+  
+  const ubsEquipment = getEquipmentByUBS(ubs.id).filter(eq => eq.isActive);
+  const totalValue = ubsEquipment.reduce((acc, eq) => acc + (eq.value || 0), 0);
+  const formattedValue = totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   return (
     <motion.div
@@ -56,9 +62,13 @@ const UBSCard: React.FC<UBSCardProps> = ({ summary, index }) => {
       </div>
 
       <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-muted-foreground">Equipamentos</span>
           <span className="text-2xl font-display font-bold text-foreground">{totalEquipment}</span>
+        </div>
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-sm text-muted-foreground flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" />Valor Total</span>
+          <span className="text-lg font-display font-bold text-success">{formattedValue}</span>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">

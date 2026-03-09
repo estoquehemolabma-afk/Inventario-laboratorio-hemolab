@@ -53,6 +53,7 @@ export type Database = {
           type: string
           ubs_id: string
           updated_at: string
+          value: number | null
         }
         Insert: {
           brand?: string | null
@@ -71,6 +72,7 @@ export type Database = {
           type: string
           ubs_id: string
           updated_at?: string
+          value?: number | null
         }
         Update: {
           brand?: string | null
@@ -89,6 +91,7 @@ export type Database = {
           type?: string
           ubs_id?: string
           updated_at?: string
+          value?: number | null
         }
         Relationships: [
           {
