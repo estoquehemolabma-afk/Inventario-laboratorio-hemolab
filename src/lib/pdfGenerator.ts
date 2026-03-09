@@ -61,7 +61,7 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
   Object.entries(equipmentByLocation).forEach(([location, items]) => {
     if (currentY > 250) { doc.addPage(); currentY = 20; }
 
-    doc.setFillColor(30, 64, 124);
+    doc.setFillColor(34, 139, 34);
     doc.rect(14, currentY - 5, pageWidth - 28, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(10);
