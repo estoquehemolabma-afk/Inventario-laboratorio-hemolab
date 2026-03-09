@@ -27,9 +27,9 @@ const Dashboard: React.FC = () => {
     return true;
   });
 
+  const totalEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.totalEquipment, 0);
   const operationalEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.operational, 0);
   const maintenanceEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.maintenance, 0);
-  const deficitEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.decommissioned, 0);
 
   return (
     <MainLayout>
