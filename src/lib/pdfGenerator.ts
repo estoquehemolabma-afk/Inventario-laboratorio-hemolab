@@ -6,8 +6,8 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Header
-  doc.setFillColor(30, 64, 124);
+  // Header - Green
+  doc.setFillColor(34, 139, 34);
   doc.rect(0, 0, pageWidth, 40, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
