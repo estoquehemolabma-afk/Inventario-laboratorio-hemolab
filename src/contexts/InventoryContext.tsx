@@ -85,6 +85,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         isActive: eq.is_active !== false,
         deactivationReason: eq.deactivation_reason || null,
         maintenanceLogs: [],
+        value: eq.value || 0,
         createdAt: eq.created_at,
         updatedAt: eq.updated_at,
       })));
