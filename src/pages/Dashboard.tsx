@@ -44,7 +44,7 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard title="Total de Unidades" value={filteredSummaries.length} icon={Building2} variant="default" delay={0} />
-        <StatCard title="Total de Equipamentos" value={totalEquipment} icon={Package} variant="default" delay={0.1} />
+        <StatCard title="Valor Total" value={formattedTotalValue} icon={DollarSign} variant="default" delay={0.1} />
         <StatCard title="Funcionando" value={operationalEquipment} icon={CheckCircle} variant="success" delay={0.2} />
         <StatCard title="Em Manutenção" value={maintenanceEquipment} icon={AlertTriangle} variant="warning" delay={0.3} />
       </div>
