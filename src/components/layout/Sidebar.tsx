@@ -31,6 +31,7 @@ const navItems = [
   { icon: Headphones, label: 'Suporte', path: '/suporte' },
   { icon: BarChart3, label: 'Relatórios Suporte', path: '/relatorios-suporte' },
   { icon: FileText, label: 'Relatórios Inventário', path: '/relatorios' },
+  { icon: Users, label: 'Usuários', path: '/usuarios' },
   { icon: Settings, label: 'Configurações', path: '/configuracoes' },
 ];
 

@@ -42,6 +42,7 @@ const App = () => (
               <Route path="/relatorios" element={<ProtectedRoute><RelatoriosPage /></ProtectedRoute>} />
               <Route path="/relatorios-suporte" element={<ProtectedRoute><RelatoriosSuportePage /></ProtectedRoute>} />
               <Route path="/suporte" element={<ProtectedRoute><SuportePage /></ProtectedRoute>} />
+              <Route path="/usuarios" element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
 
               {/* Support - public auth */}
               <Route path="/auth" element={<AuthPage />} />
