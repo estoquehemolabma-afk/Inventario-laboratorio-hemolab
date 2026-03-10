@@ -39,7 +39,9 @@ const SolicitarSuportePage: React.FC = () => {
 
   useEffect(() => { if (!authLoading && !user) navigate('/auth'); }, [user, authLoading, navigate]);
 
-  const userUbsList = profile?.ubs_name || [];
+  // Show all UBS from the system, not just user's assigned ones
+  const allUbsNames = ubsList.map(u => u.name);
+  const userUbsList = allUbsNames.length > 0 ? allUbsNames : (profile?.ubs_name || []);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
