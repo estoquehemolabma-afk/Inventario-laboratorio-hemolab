@@ -31,6 +31,13 @@ const Dashboard: React.FC = () => {
   const operationalEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.operational, 0);
   const maintenanceEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.maintenance, 0);
 
+  // Calculate total monetary value across all filtered UBS
+  const filteredUbsIds = filteredSummaries.map(s => s.ubs.id);
+  const totalValue = equipmentList
+    .filter(eq => filteredUbsIds.includes(eq.ubsId) && eq.isActive)
+    .reduce((acc, eq) => acc + (eq.value || 0), 0);
+  const formattedTotalValue = totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
   return (
     <MainLayout>
       <DashboardHeader onAddClick={() => setShowAddDialog(true)} />
