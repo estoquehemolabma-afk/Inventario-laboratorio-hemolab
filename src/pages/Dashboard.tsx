@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, CheckCircle, AlertTriangle, Package } from 'lucide-react';
+import { Building2, CheckCircle, AlertTriangle, DollarSign } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import StatCard from '@/components/dashboard/StatCard';
