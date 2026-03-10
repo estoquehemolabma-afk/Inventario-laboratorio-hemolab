@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useInventory } from '@/contexts/InventoryContext';
 
 const formSchema = z.object({
   ubs_name: z.string().min(1, 'Selecione a unidade'),
@@ -26,12 +27,10 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-import { useInventory } from '@/contexts/InventoryContext';
-
 const SolicitarSuportePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, profile, loading: authLoading, signOut } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading, signOut } = useAuth();
   const { getEquipmentByUBS, equipmentList, ubsList } = useInventory();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
@@ -39,22 +38,21 @@ const SolicitarSuportePage: React.FC = () => {
 
   useEffect(() => { if (!authLoading && !user) navigate('/auth'); }, [user, authLoading, navigate]);
 
-  // Show all UBS from the system, not just user's assigned ones
-  const allUbsNames = ubsList.map(u => u.name);
-  const userUbsList = allUbsNames.length > 0 ? allUbsNames : (profile?.ubs_name || []);
+  // Admin sees all units; support sees only their assigned unit
+  const userUbsList = isAdmin
+    ? ubsList.map(u => u.name)
+    : (profile?.ubs_name || []);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { ubs_name: userUbsList.length === 1 ? userUbsList[0] : '', location: '', description: '', equipment_info: '', request_type: '' },
   });
 
-  useEffect(() => { if (userUbsList.length === 1) form.setValue('ubs_name', userUbsList[0]); }, [profile, form, userUbsList]);
+  useEffect(() => { if (userUbsList.length === 1) form.setValue('ubs_name', userUbsList[0]); }, [profile, isAdmin, form, userUbsList.length]);
 
-  // When UBS changes, load its equipment
   const selectedUbsName = form.watch('ubs_name');
   useEffect(() => {
     if (selectedUbsName) {
-      // Find UBS id by name
       const ubs = ubsList.find(u => u.name === selectedUbsName);
       if (ubs) {
         const eqs = equipmentList.filter(e => e.ubsId === ubs.id && e.isActive);
@@ -62,7 +60,6 @@ const SolicitarSuportePage: React.FC = () => {
       } else {
         setUbsEquipments([]);
       }
-      // Reset equipment selection when UBS changes
       form.setValue('equipment_info', '');
       form.setValue('location', '');
       form.setValue('request_type', '');
@@ -71,7 +68,6 @@ const SolicitarSuportePage: React.FC = () => {
     }
   }, [selectedUbsName, ubsList, equipmentList]);
 
-  // When equipment is selected, auto-fill location and group
   const selectedEquipmentInfo = form.watch('equipment_info');
   useEffect(() => {
     if (selectedEquipmentInfo && selectedEquipmentInfo !== 'Outro (Não listado)') {

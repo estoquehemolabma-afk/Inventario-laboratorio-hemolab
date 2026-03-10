@@ -6,7 +6,7 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Header - Green
+  // Header - Green #224835
   doc.setFillColor(34, 72, 53);
   doc.rect(0, 0, pageWidth, 40, 'F');
   doc.setTextColor(255, 255, 255);
@@ -43,11 +43,14 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
   const operational = equipment.filter(e => e.conservationState === 'Funcionando').length;
   const maintenance = equipment.filter(e => e.conservationState === 'Manutenção').length;
   const decommissioned = equipment.filter(e => e.conservationState === 'Inexistente').length;
+  const totalValue = equipment.reduce((acc, e) => acc + (e.value || 0), 0);
+  const formattedTotal = totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.text('RESUMO:', 14, 95);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Total: ${equipment.length}  |  Funcionando: ${operational}  |  Manutenção: ${maintenance}  |  Inexistente: ${decommissioned}`, 35, 95);
+  doc.text(`Total: ${equipment.length}  |  Funcionando: ${operational}  |  Manutenção: ${maintenance}  |  Inexistente: ${decommissioned}  |  Valor Total: ${formattedTotal}`, 35, 95);
 
   // Group by location
   const equipmentByLocation = equipment.reduce((acc, eq) => {
@@ -69,24 +72,57 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
     doc.text(location.toUpperCase(), 18, currentY);
     currentY += 8;
 
+    const locationTotal = items.reduce((acc, eq) => acc + (eq.value || 0), 0);
+
     const tableData = items.map(eq => [
-      getEquipmentTypeLabel(eq.type), eq.brand, eq.model, eq.serialNumber, eq.patrimonyNumber, conservationStateLabels[eq.conservationState],
+      getEquipmentTypeLabel(eq.type),
+      eq.brand,
+      eq.model,
+      eq.serialNumber,
+      eq.patrimonyNumber,
+      conservationStateLabels[eq.conservationState],
+      (eq.value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+    ]);
+
+    // Add total row
+    tableData.push([
+      '', '', '', '', '',
+      { content: 'SUBTOTAL:', styles: { fontStyle: 'bold', halign: 'right' } } as any,
+      { content: locationTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }), styles: { fontStyle: 'bold' } } as any,
     ]);
 
     autoTable(doc, {
       startY: currentY,
-      head: [['Tipo', 'Marca', 'Modelo', 'Nº Série', 'Patrimônio', 'Estado']],
+      head: [['Tipo', 'Marca', 'Modelo', 'Nº Série', 'Patrimônio', 'Estado', 'Valor']],
       body: tableData,
       theme: 'grid',
       headStyles: { fillColor: [34, 72, 53], textColor: [255, 255, 255], fontSize: 9, fontStyle: 'bold' },
       bodyStyles: { fontSize: 8, textColor: [0, 0, 0] },
       alternateRowStyles: { fillColor: [248, 250, 252] },
-      columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 25 }, 2: { cellWidth: 30 }, 3: { cellWidth: 35 }, 4: { cellWidth: 35 }, 5: { cellWidth: 25 } },
+      columnStyles: {
+        0: { cellWidth: 22 },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 28 },
+        4: { cellWidth: 28 },
+        5: { cellWidth: 22 },
+        6: { cellWidth: 28, halign: 'right' },
+      },
       margin: { left: 14, right: 14 },
     });
 
     currentY = (doc as any).lastAutoTable.finalY + 10;
   });
+
+  // Grand total
+  if (currentY > 250) { doc.addPage(); currentY = 20; }
+  doc.setFillColor(34, 72, 53);
+  doc.rect(14, currentY - 2, pageWidth - 28, 10, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`VALOR TOTAL: ${formattedTotal}`, pageWidth - 18, currentY + 5, { align: 'right' });
+  currentY += 20;
 
   // Signature
   if (currentY > 220) { doc.addPage(); currentY = 40; }

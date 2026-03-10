@@ -33,9 +33,7 @@ Deno.serve(async (req) => {
       const { data: { users }, error } = await supabase.auth.admin.listUsers({ perPage: 1000 })
       if (error) throw error
 
-      // Get all roles
       const { data: roles } = await supabase.from('user_roles').select('*')
-      // Get all profiles
       const { data: profiles } = await supabase.from('profiles').select('*')
 
       const enrichedUsers = users.map(u => {
@@ -58,7 +56,6 @@ Deno.serve(async (req) => {
     if (action === 'create') {
       const { email, password, full_name, phone, ubs_names, role } = params
 
-      // Create auth user
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email,
         password,
@@ -71,7 +68,6 @@ Deno.serve(async (req) => {
       })
       if (createError) throw createError
 
-      // Assign role
       if (role && newUser.user) {
         const { error: roleError } = await supabase.from('user_roles').insert({
           user_id: newUser.user.id,
@@ -83,18 +79,43 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: true, user_id: newUser.user.id }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    if (action === 'update') {
+      const { user_id, full_name, phone, ubs_names, role } = params
+
+      // Update profile
+      const { error: profileError } = await supabase.from('profiles').update({
+        full_name,
+        phone: phone || '',
+        ubs_name: ubs_names || [],
+      }).eq('user_id', user_id)
+      if (profileError) throw profileError
+
+      // Update user metadata
+      await supabase.auth.admin.updateUserById(user_id, {
+        user_metadata: {
+          full_name,
+          phone: phone || '',
+          ubs_name: ubs_names?.join('|||') || '',
+        },
+      })
+
+      // Update role
+      if (role) {
+        await supabase.from('user_roles').delete().eq('user_id', user_id)
+        const { error: roleError } = await supabase.from('user_roles').insert({ user_id, role })
+        if (roleError) throw roleError
+      }
+
+      return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
     if (action === 'update_role') {
       const { user_id, role } = params
-
-      // Remove existing roles
       await supabase.from('user_roles').delete().eq('user_id', user_id)
-
-      // Insert new role
       if (role) {
         const { error } = await supabase.from('user_roles').insert({ user_id, role })
         if (error) throw error
       }
-
       return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
@@ -102,7 +123,6 @@ Deno.serve(async (req) => {
       const { user_id } = params
       const { error } = await supabase.auth.admin.deleteUser(user_id)
       if (error) throw error
-
       return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 

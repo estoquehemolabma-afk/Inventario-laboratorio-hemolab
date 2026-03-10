@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Plus, Trash2, Shield, Headphones, RefreshCw, Search } from 'lucide-react';
+import { Users, Plus, Trash2, Shield, Headphones, RefreshCw, Search, Pencil } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +34,10 @@ const UsuariosPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editingUser, setEditingUser] = useState<ManagedUser | null>(null);
 
   // Form state
   const [newEmail, setNewEmail] = useState('');
@@ -42,16 +45,18 @@ const UsuariosPage: React.FC = () => {
   const [newFullName, setNewFullName] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [newRole, setNewRole] = useState<string>('user');
-  const [newUbsNames, setNewUbsNames] = useState<string[]>([]);
+  const [newUbsName, setNewUbsName] = useState<string>('');
+
+  // Edit form state
+  const [editFullName, setEditFullName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editRole, setEditRole] = useState<string>('user');
+  const [editUbsName, setEditUbsName] = useState<string>('');
 
   const callManageUsers = async (body: Record<string, unknown>) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Não autenticado');
-
-    const res = await supabase.functions.invoke('manage-users', {
-      body,
-    });
-
+    const res = await supabase.functions.invoke('manage-users', { body });
     if (res.error) throw new Error(res.error.message);
     return res.data;
   };
@@ -84,7 +89,7 @@ const UsuariosPage: React.FC = () => {
         password: newPassword,
         full_name: newFullName,
         phone: newPhone,
-        ubs_names: newUbsNames,
+        ubs_names: newUbsName ? [newUbsName] : [],
         role: newRole,
       });
       toast({ title: 'Usuário criado com sucesso!' });
@@ -96,6 +101,41 @@ const UsuariosPage: React.FC = () => {
     } finally {
       setCreating(false);
     }
+  };
+
+  const handleEditUser = async () => {
+    if (!editingUser || !editFullName) {
+      toast({ title: 'Preencha o nome', variant: 'destructive' });
+      return;
+    }
+    setEditing(true);
+    try {
+      await callManageUsers({
+        action: 'update',
+        user_id: editingUser.id,
+        full_name: editFullName,
+        phone: editPhone,
+        ubs_names: editUbsName ? [editUbsName] : [],
+        role: editRole,
+      });
+      toast({ title: 'Usuário atualizado com sucesso!' });
+      setShowEditDialog(false);
+      setEditingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast({ title: 'Erro ao atualizar usuário', description: error.message, variant: 'destructive' });
+    } finally {
+      setEditing(false);
+    }
+  };
+
+  const openEditDialog = (user: ManagedUser) => {
+    setEditingUser(user);
+    setEditFullName(user.full_name);
+    setEditPhone(user.phone || '');
+    setEditRole(user.roles.includes('admin') ? 'admin' : 'user');
+    setEditUbsName(user.ubs_name?.[0] || '');
+    setShowEditDialog(true);
   };
 
   const handleUpdateRole = async (userId: string, role: string) => {
@@ -119,12 +159,7 @@ const UsuariosPage: React.FC = () => {
   };
 
   const resetForm = () => {
-    setNewEmail('');
-    setNewPassword('');
-    setNewFullName('');
-    setNewPhone('');
-    setNewRole('user');
-    setNewUbsNames([]);
+    setNewEmail(''); setNewPassword(''); setNewFullName(''); setNewPhone(''); setNewRole('user'); setNewUbsName('');
   };
 
   const filteredUsers = users.filter(u =>
@@ -139,6 +174,20 @@ const UsuariosPage: React.FC = () => {
     return <Badge variant="secondary"><Headphones className="w-3 h-3 mr-1" />Suporte</Badge>;
   };
 
+  const renderUnitSelector = (value: string, onChange: (v: string) => void, label?: string) => (
+    <div className="space-y-2">
+      <Label>{label || 'Unidade Vinculada'}</Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger><SelectValue placeholder="Selecione uma unidade" /></SelectTrigger>
+        <SelectContent>
+          {ubsList.map(u => (
+            <SelectItem key={u.id} value={u.name}>{u.name}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -149,39 +198,20 @@ const UsuariosPage: React.FC = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={fetchUsers} disabled={loading}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Atualizar
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />Atualizar
             </Button>
             <Button onClick={() => { resetForm(); setShowCreateDialog(true); }}>
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Usuário
+              <Plus className="w-4 h-4 mr-2" />Novo Usuário
             </Button>
           </div>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <Card className="border-border/50 bg-card/50">
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{users.length}</div>
-              <div className="text-sm text-muted-foreground">Total de Usuários</div>
-            </CardContent>
-          </Card>
-          <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-primary">{users.filter(u => u.roles.includes('admin')).length}</div>
-              <div className="text-sm text-primary/80">Administradores</div>
-            </CardContent>
-          </Card>
-          <Card className="border-border/50 bg-card/50">
-            <CardContent className="pt-4">
-              <div className="text-2xl font-bold">{users.filter(u => !u.roles.includes('admin')).length}</div>
-              <div className="text-sm text-muted-foreground">Suporte</div>
-            </CardContent>
-          </Card>
+          <Card className="border-border/50 bg-card/50"><CardContent className="pt-4"><div className="text-2xl font-bold">{users.length}</div><div className="text-sm text-muted-foreground">Total de Usuários</div></CardContent></Card>
+          <Card className="border-primary/30 bg-primary/5"><CardContent className="pt-4"><div className="text-2xl font-bold text-primary">{users.filter(u => u.roles.includes('admin')).length}</div><div className="text-sm text-primary/80">Administradores</div></CardContent></Card>
+          <Card className="border-border/50 bg-card/50"><CardContent className="pt-4"><div className="text-2xl font-bold">{users.filter(u => !u.roles.includes('admin')).length}</div><div className="text-sm text-muted-foreground">Suporte</div></CardContent></Card>
         </div>
 
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar por nome ou e-mail..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
@@ -200,30 +230,21 @@ const UsuariosPage: React.FC = () => {
                   <div>
                     <strong className="text-sm block">{user.full_name}</strong>
                     <span className="text-xs text-muted-foreground">{user.email}</span>
+                    {user.ubs_name?.[0] && <span className="text-xs text-muted-foreground block">Unidade: {user.ubs_name[0]}</span>}
                   </div>
                   {getRoleBadge(user.roles)}
                 </div>
                 <div className="flex items-center gap-2 pt-2">
-                  <Select value={user.roles.includes('admin') ? 'admin' : 'user'} onValueChange={v => handleUpdateRole(user.id, v)}>
-                    <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="user">Suporte</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs" onClick={() => openEditDialog(user)}>
+                    <Pencil className="w-3 h-3 mr-1" />Editar
+                  </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"><Trash2 className="w-4 h-4" /></Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Remover usuário?</AlertDialogTitle>
-                        <AlertDialogDescription>Esta ação não pode ser desfeita. O usuário {user.full_name} será removido permanentemente.</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remover</AlertDialogAction>
-                      </AlertDialogFooter>
+                      <AlertDialogHeader><AlertDialogTitle>Remover usuário?</AlertDialogTitle><AlertDialogDescription>O usuário {user.full_name} será removido permanentemente.</AlertDialogDescription></AlertDialogHeader>
+                      <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remover</AlertDialogAction></AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
@@ -241,8 +262,8 @@ const UsuariosPage: React.FC = () => {
                   <TableHead>Nome</TableHead>
                   <TableHead>E-mail</TableHead>
                   <TableHead>Telefone</TableHead>
+                  <TableHead>Unidade</TableHead>
                   <TableHead>Perfil</TableHead>
-                  <TableHead>Alterar Perfil</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -256,32 +277,21 @@ const UsuariosPage: React.FC = () => {
                     <TableCell className="font-medium">{user.full_name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.phone || '-'}</TableCell>
+                    <TableCell>{user.ubs_name?.[0] || '-'}</TableCell>
                     <TableCell>{getRoleBadge(user.roles)}</TableCell>
-                    <TableCell>
-                      <Select value={user.roles.includes('admin') ? 'admin' : 'user'} onValueChange={v => handleUpdateRole(user.id, v)}>
-                        <SelectTrigger className="w-40 h-8 text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Administrador</SelectItem>
-                          <SelectItem value="user">Suporte</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
                     <TableCell className="text-right">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="w-4 h-4" /></Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Remover usuário?</AlertDialogTitle>
-                            <AlertDialogDescription>Esta ação não pode ser desfeita. O usuário {user.full_name} será removido permanentemente.</AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remover</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(user)}><Pencil className="w-4 h-4" /></Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="w-4 h-4" /></Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader><AlertDialogTitle>Remover usuário?</AlertDialogTitle><AlertDialogDescription>O usuário {user.full_name} será removido permanentemente.</AlertDialogDescription></AlertDialogHeader>
+                            <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteUser(user.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remover</AlertDialogAction></AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -299,22 +309,10 @@ const UsuariosPage: React.FC = () => {
             <DialogDescription>Cadastre um novo usuário no sistema</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Nome Completo *</Label>
-              <Input placeholder="Nome completo" value={newFullName} onChange={e => setNewFullName(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>E-mail *</Label>
-              <Input type="email" placeholder="email@exemplo.com" value={newEmail} onChange={e => setNewEmail(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Senha *</Label>
-              <Input type="password" placeholder="Mínimo 6 caracteres" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Telefone</Label>
-              <Input type="tel" placeholder="(00) 00000-0000" value={newPhone} onChange={e => setNewPhone(formatPhone(e.target.value))} />
-            </div>
+            <div className="space-y-2"><Label>Nome Completo *</Label><Input placeholder="Nome completo" value={newFullName} onChange={e => setNewFullName(e.target.value)} /></div>
+            <div className="space-y-2"><Label>E-mail *</Label><Input type="email" placeholder="email@exemplo.com" value={newEmail} onChange={e => setNewEmail(e.target.value)} /></div>
+            <div className="space-y-2"><Label>Senha *</Label><Input type="password" placeholder="Mínimo 6 caracteres" value={newPassword} onChange={e => setNewPassword(e.target.value)} /></div>
+            <div className="space-y-2"><Label>Telefone</Label><Input type="tel" placeholder="(00) 00000-0000" value={newPhone} onChange={e => setNewPhone(formatPhone(e.target.value))} /></div>
             <div className="space-y-2">
               <Label>Perfil *</Label>
               <Select value={newRole} onValueChange={setNewRole}>
@@ -325,32 +323,39 @@ const UsuariosPage: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Unidades <span className="text-xs text-muted-foreground">(pode selecionar várias)</span></Label>
-              <Select value="" onValueChange={v => { if (!newUbsNames.includes(v)) setNewUbsNames([...newUbsNames, v]); }}>
-                <SelectTrigger><SelectValue placeholder="Selecione uma unidade" /></SelectTrigger>
-                <SelectContent>
-                  {ubsList.filter(u => !newUbsNames.includes(u.name)).map(u => (
-                    <SelectItem key={u.id} value={u.name}>{u.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {newUbsNames.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {newUbsNames.map(name => (
-                    <Badge key={name} variant="secondary" className="flex items-center gap-1 text-xs">
-                      {name.length > 25 ? name.substring(0, 22) + '...' : name}
-                      <button type="button" onClick={() => setNewUbsNames(newUbsNames.filter(n => n !== name))} className="ml-1 hover:text-destructive"><X className="w-3 h-3" /></button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
+            {renderUnitSelector(newUbsName, setNewUbsName)}
             <div className="flex gap-2 pt-2">
               <Button variant="outline" className="flex-1" onClick={() => setShowCreateDialog(false)}>Cancelar</Button>
-              <Button className="flex-1" onClick={handleCreateUser} disabled={creating}>
-                {creating ? 'Criando...' : 'Criar Usuário'}
-              </Button>
+              <Button className="flex-1" onClick={handleCreateUser} disabled={creating}>{creating ? 'Criando...' : 'Criar Usuário'}</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+            <DialogDescription>{editingUser?.email}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2"><Label>Nome Completo *</Label><Input placeholder="Nome completo" value={editFullName} onChange={e => setEditFullName(e.target.value)} /></div>
+            <div className="space-y-2"><Label>Telefone</Label><Input type="tel" placeholder="(00) 00000-0000" value={editPhone} onChange={e => setEditPhone(formatPhone(e.target.value))} /></div>
+            <div className="space-y-2">
+              <Label>Perfil *</Label>
+              <Select value={editRole} onValueChange={setEditRole}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrador (acesso total + suporte)</SelectItem>
+                  <SelectItem value="user">Suporte (somente área de suporte)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {renderUnitSelector(editUbsName, setEditUbsName)}
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => setShowEditDialog(false)}>Cancelar</Button>
+              <Button className="flex-1" onClick={handleEditUser} disabled={editing}>{editing ? 'Salvando...' : 'Salvar Alterações'}</Button>
             </div>
           </div>
         </DialogContent>
