@@ -7,7 +7,7 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Header - Green
-  doc.setFillColor(34, 139, 34);
+  doc.setFillColor(34, 72, 53);
   doc.rect(0, 0, pageWidth, 40, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
