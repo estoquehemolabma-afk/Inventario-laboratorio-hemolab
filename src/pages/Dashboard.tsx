@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, CheckCircle, AlertTriangle, Package } from 'lucide-react';
+import { Building2, CheckCircle, AlertTriangle, DollarSign } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import StatCard from '@/components/dashboard/StatCard';
@@ -9,7 +9,7 @@ import UBSFormDialog from '@/components/dialogs/UBSFormDialog';
 import { useInventory } from '@/contexts/InventoryContext';
 
 const Dashboard: React.FC = () => {
-  const { getAllSummaries, selectedUBS, searchQuery } = useInventory();
+  const { getAllSummaries, selectedUBS, searchQuery, equipmentList } = useInventory();
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const summaries = getAllSummaries();
@@ -31,13 +31,20 @@ const Dashboard: React.FC = () => {
   const operationalEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.operational, 0);
   const maintenanceEquipment = filteredSummaries.reduce((acc, curr) => acc + curr.equipmentByState.maintenance, 0);
 
+  // Calculate total monetary value across all filtered UBS
+  const filteredUbsIds = filteredSummaries.map(s => s.ubs.id);
+  const totalValue = equipmentList
+    .filter(eq => filteredUbsIds.includes(eq.ubsId) && eq.isActive)
+    .reduce((acc, eq) => acc + (eq.value || 0), 0);
+  const formattedTotalValue = totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
   return (
     <MainLayout>
       <DashboardHeader onAddClick={() => setShowAddDialog(true)} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard title="Total de Unidades" value={filteredSummaries.length} icon={Building2} variant="default" delay={0} />
-        <StatCard title="Total de Equipamentos" value={totalEquipment} icon={Package} variant="default" delay={0.1} />
+        <StatCard title="Valor Total" value={formattedTotalValue} icon={DollarSign} variant="default" delay={0.1} />
         <StatCard title="Funcionando" value={operationalEquipment} icon={CheckCircle} variant="success" delay={0.2} />
         <StatCard title="Em Manutenção" value={maintenanceEquipment} icon={AlertTriangle} variant="warning" delay={0.3} />
       </div>
