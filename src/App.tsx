@@ -18,6 +18,7 @@ import AcompanharSuportePage from "./pages/AcompanharSuportePage";
 import AuthPage from "./pages/AuthPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import NotFound from "./pages/NotFound";
+import UsuariosPage from "./pages/UsuariosPage";
 
 const queryClient = new QueryClient();
 
