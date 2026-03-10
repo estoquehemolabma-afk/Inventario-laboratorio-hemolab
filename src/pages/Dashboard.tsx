@@ -9,7 +9,7 @@ import UBSFormDialog from '@/components/dialogs/UBSFormDialog';
 import { useInventory } from '@/contexts/InventoryContext';
 
 const Dashboard: React.FC = () => {
-  const { getAllSummaries, selectedUBS, searchQuery } = useInventory();
+  const { getAllSummaries, selectedUBS, searchQuery, equipmentList } = useInventory();
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const summaries = getAllSummaries();
