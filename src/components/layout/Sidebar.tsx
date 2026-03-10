@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   Menu,
   Activity,
+  Users,
   Headphones,
   BarChart3,
   LogOut
