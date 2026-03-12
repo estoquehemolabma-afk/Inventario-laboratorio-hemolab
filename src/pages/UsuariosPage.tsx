@@ -52,6 +52,7 @@ const UsuariosPage: React.FC = () => {
   const [editPhone, setEditPhone] = useState('');
   const [editRole, setEditRole] = useState<string>('user');
   const [editUbsName, setEditUbsName] = useState<string>('');
+  const [editPassword, setEditPassword] = useState('');
 
   const callManageUsers = async (body: Record<string, unknown>) => {
     const { data: { session } } = await supabase.auth.getSession();
