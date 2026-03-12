@@ -118,6 +118,7 @@ const UsuariosPage: React.FC = () => {
         phone: editPhone,
         ubs_names: editUbsName ? [editUbsName] : [],
         role: editRole,
+        password: editPassword || undefined,
       });
       toast({ title: 'Usuário atualizado com sucesso!' });
       setShowEditDialog(false);
