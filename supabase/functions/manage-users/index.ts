@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'update') {
-      const { user_id, full_name, phone, ubs_names, role } = params
+      const { user_id, full_name, phone, ubs_names, role, password } = params
 
       // Update profile
       const { error: profileError } = await supabase.from('profiles').update({
@@ -90,14 +90,18 @@ Deno.serve(async (req) => {
       }).eq('user_id', user_id)
       if (profileError) throw profileError
 
-      // Update user metadata
-      await supabase.auth.admin.updateUserById(user_id, {
+      // Update user metadata (and password if provided)
+      const updatePayload: Record<string, unknown> = {
         user_metadata: {
           full_name,
           phone: phone || '',
           ubs_name: ubs_names?.join('|||') || '',
         },
-      })
+      }
+      if (password) {
+        updatePayload.password = password
+      }
+      await supabase.auth.admin.updateUserById(user_id, updatePayload)
 
       // Update role
       if (role) {

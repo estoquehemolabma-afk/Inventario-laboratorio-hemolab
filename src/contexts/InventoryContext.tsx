@@ -15,7 +15,7 @@ interface InventoryContextType {
   updateUBS: (id: string, ubs: Partial<UBS>) => Promise<void>;
   deleteUBS: (id: string) => Promise<void>;
   addEquipment: (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs' | 'isActive' | 'deactivationReason'>) => Promise<void>;
-  updateEquipment: (id: string, equipment: Partial<Equipment>) => Promise<void>;
+  updateEquipment: (id: string, equipment: Partial<Equipment>, statusJustification?: string) => Promise<void>;
   deleteEquipment: (id: string) => Promise<void>;
   toggleEquipmentActive: (id: string, isActive: boolean, reason?: string) => Promise<void>;
   addEquipmentType: (name: string) => Promise<void>;
@@ -186,7 +186,19 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     await refreshData();
   };
 
-  const updateEquipment = async (id: string, equipment: Partial<Equipment>) => {
+  const logStatusChange = async (equipmentId: string, previousState: string, newState: string, justification: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from('equipment_status_logs').insert({
+      equipment_id: equipmentId,
+      previous_state: previousState,
+      new_state: newState,
+      justification,
+      created_by: user?.id || null,
+    } as any);
+    if (error) throw error;
+  };
+
+  const updateEquipment = async (id: string, equipment: Partial<Equipment>, statusJustification?: string) => {
     const updateData: Record<string, unknown> = {};
     if (equipment.ubsId !== undefined) updateData.ubs_id = equipment.ubsId;
     if (equipment.type !== undefined) updateData.type = equipment.type;
@@ -202,6 +214,14 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     if (equipment.installationDate !== undefined) updateData.installation_date = equipment.installationDate || null;
     if (equipment.observations !== undefined) updateData.observations = equipment.observations;
     if (equipment.value !== undefined) updateData.value = equipment.value;
+
+    // Log status change if justification provided
+    if (statusJustification && equipment.conservationState) {
+      const currentEquipment = equipmentList.find(eq => eq.id === id);
+      if (currentEquipment && currentEquipment.conservationState !== equipment.conservationState) {
+        await logStatusChange(id, currentEquipment.conservationState, equipment.conservationState, statusJustification);
+      }
+    }
 
     const { error } = await supabase.from('equipment').update(updateData).eq('id', id);
     if (error) throw error;

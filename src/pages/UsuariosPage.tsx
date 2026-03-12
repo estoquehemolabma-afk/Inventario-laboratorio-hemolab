@@ -52,6 +52,7 @@ const UsuariosPage: React.FC = () => {
   const [editPhone, setEditPhone] = useState('');
   const [editRole, setEditRole] = useState<string>('user');
   const [editUbsName, setEditUbsName] = useState<string>('');
+  const [editPassword, setEditPassword] = useState('');
 
   const callManageUsers = async (body: Record<string, unknown>) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -117,6 +118,7 @@ const UsuariosPage: React.FC = () => {
         phone: editPhone,
         ubs_names: editUbsName ? [editUbsName] : [],
         role: editRole,
+        password: editPassword || undefined,
       });
       toast({ title: 'Usuário atualizado com sucesso!' });
       setShowEditDialog(false);
@@ -135,6 +137,7 @@ const UsuariosPage: React.FC = () => {
     setEditPhone(user.phone || '');
     setEditRole(user.roles.includes('admin') ? 'admin' : 'user');
     setEditUbsName(user.ubs_name?.[0] || '');
+    setEditPassword('');
     setShowEditDialog(true);
   };
 
@@ -342,6 +345,7 @@ const UsuariosPage: React.FC = () => {
           <div className="space-y-4">
             <div className="space-y-2"><Label>Nome Completo *</Label><Input placeholder="Nome completo" value={editFullName} onChange={e => setEditFullName(e.target.value)} /></div>
             <div className="space-y-2"><Label>Telefone</Label><Input type="tel" placeholder="(00) 00000-0000" value={editPhone} onChange={e => setEditPhone(formatPhone(e.target.value))} /></div>
+            <div className="space-y-2"><Label>Nova Senha (deixe em branco para manter)</Label><Input type="password" placeholder="Mínimo 6 caracteres" value={editPassword} onChange={e => setEditPassword(e.target.value)} /></div>
             <div className="space-y-2">
               <Label>Perfil *</Label>
               <Select value={editRole} onValueChange={setEditRole}>
