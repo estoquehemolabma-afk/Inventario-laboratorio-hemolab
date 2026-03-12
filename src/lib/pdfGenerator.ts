@@ -160,3 +160,88 @@ export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
 
   doc.save(`Inventario_${ubs.name.replace(/\s+/g, '_')}_${new Date().getFullYear()}.pdf`);
 };
+
+export const generateStatusHistoryReport = (ubs: UBS, logs: StatusLogEntry[]) => {
+  const doc = new jsPDF('landscape');
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Header
+  doc.setFillColor(34, 72, 53);
+  doc.rect(0, 0, pageWidth, 35, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('HISTÓRICO DE ALTERAÇÕES DE STATUS', pageWidth / 2, 15, { align: 'center' });
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Relatório de Manutenções e Mudanças de Estado', pageWidth / 2, 25, { align: 'center' });
+
+  // Unit info
+  doc.setTextColor(0, 0, 0);
+  doc.setFillColor(245, 247, 250);
+  doc.rect(14, 42, pageWidth - 28, 20, 'F');
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Unidade:', 20, 52);
+  doc.setFont('helvetica', 'normal');
+  doc.text(ubs.name, 50, 52);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Total de registros:', 150, 52);
+  doc.setFont('helvetica', 'normal');
+  doc.text(String(logs.length), 200, 52);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Data do relatório:', 220, 52);
+  doc.setFont('helvetica', 'normal');
+  doc.text(new Date().toLocaleDateString('pt-BR'), 265, 52);
+
+  if (logs.length === 0) {
+    doc.setFontSize(14);
+    doc.setTextColor(128, 128, 128);
+    doc.text('Nenhum registro de alteração de status encontrado para esta unidade.', pageWidth / 2, 90, { align: 'center' });
+  } else {
+    const tableData = logs.map(log => [
+      log.date,
+      log.equipmentType,
+      log.brand + ' ' + log.model,
+      log.serialNumber || '-',
+      log.patrimonyNumber || '-',
+      log.location,
+      log.previousState,
+      log.newState,
+      log.justification,
+    ]);
+
+    autoTable(doc, {
+      startY: 68,
+      head: [['Data', 'Tipo', 'Marca/Modelo', 'Nº Série', 'Patrimônio', 'Setor', 'Estado Anterior', 'Novo Estado', 'Justificativa']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [34, 72, 53], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 7, textColor: [0, 0, 0] },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: {
+        0: { cellWidth: 22 },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 25 },
+        5: { cellWidth: 28 },
+        6: { cellWidth: 28 },
+        7: { cellWidth: 28 },
+        8: { cellWidth: 60 },
+      },
+      margin: { left: 14, right: 14 },
+    });
+  }
+
+  // Footer
+  const pageCount = doc.internal.pages.length - 1;
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    doc.text(`Página ${i} de ${pageCount} - Gerado em ${new Date().toLocaleString('pt-BR')}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+  }
+
+  doc.save(`Historico_Status_${ubs.name.replace(/\s+/g, '_')}_${new Date().getFullYear()}.pdf`);
+};
