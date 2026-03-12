@@ -2,6 +2,19 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { UBS, Equipment, getEquipmentTypeLabel, conservationStateLabels } from '@/types/inventory';
 
+export interface StatusLogEntry {
+  equipmentType: string;
+  brand: string;
+  model: string;
+  serialNumber: string;
+  patrimonyNumber: string;
+  previousState: string;
+  newState: string;
+  justification: string;
+  date: string;
+  location: string;
+}
+
 export const generateUBSReport = (ubs: UBS, equipment: Equipment[]) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
