@@ -15,7 +15,7 @@ interface InventoryContextType {
   updateUBS: (id: string, ubs: Partial<UBS>) => Promise<void>;
   deleteUBS: (id: string) => Promise<void>;
   addEquipment: (equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'maintenanceLogs' | 'isActive' | 'deactivationReason'>) => Promise<void>;
-  updateEquipment: (id: string, equipment: Partial<Equipment>) => Promise<void>;
+  updateEquipment: (id: string, equipment: Partial<Equipment>, statusJustification?: string) => Promise<void>;
   deleteEquipment: (id: string) => Promise<void>;
   toggleEquipmentActive: (id: string, isActive: boolean, reason?: string) => Promise<void>;
   addEquipmentType: (name: string) => Promise<void>;

@@ -345,6 +345,7 @@ const UsuariosPage: React.FC = () => {
           <div className="space-y-4">
             <div className="space-y-2"><Label>Nome Completo *</Label><Input placeholder="Nome completo" value={editFullName} onChange={e => setEditFullName(e.target.value)} /></div>
             <div className="space-y-2"><Label>Telefone</Label><Input type="tel" placeholder="(00) 00000-0000" value={editPhone} onChange={e => setEditPhone(formatPhone(e.target.value))} /></div>
+            <div className="space-y-2"><Label>Nova Senha (deixe em branco para manter)</Label><Input type="password" placeholder="Mínimo 6 caracteres" value={editPassword} onChange={e => setEditPassword(e.target.value)} /></div>
             <div className="space-y-2">
               <Label>Perfil *</Label>
               <Select value={editRole} onValueChange={setEditRole}>
