@@ -136,6 +136,7 @@ const UsuariosPage: React.FC = () => {
     setEditPhone(user.phone || '');
     setEditRole(user.roles.includes('admin') ? 'admin' : 'user');
     setEditUbsName(user.ubs_name?.[0] || '');
+    setEditPassword('');
     setShowEditDialog(true);
   };
 
