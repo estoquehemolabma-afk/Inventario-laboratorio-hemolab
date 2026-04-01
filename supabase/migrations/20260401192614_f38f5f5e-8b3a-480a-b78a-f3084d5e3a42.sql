@@ -1,0 +1,1 @@
+ALTER TABLE public.equipment_status_logs ADD COLUMN maintenance_cost NUMERIC DEFAULT 0;

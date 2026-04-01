@@ -110,6 +110,7 @@ export type Database = {
           equipment_id: string
           id: string
           justification: string
+          maintenance_cost: number | null
           new_state: string
           previous_state: string
         }
@@ -119,6 +120,7 @@ export type Database = {
           equipment_id: string
           id?: string
           justification: string
+          maintenance_cost?: number | null
           new_state: string
           previous_state: string
         }
@@ -128,6 +130,7 @@ export type Database = {
           equipment_id?: string
           id?: string
           justification?: string
+          maintenance_cost?: number | null
           new_state?: string
           previous_state?: string
         }
