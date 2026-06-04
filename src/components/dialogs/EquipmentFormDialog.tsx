@@ -27,6 +27,7 @@ interface EquipmentFormDialogProps {
 }
 
 const equipmentFormSchema = z.object({
+  ubsId: z.string().min(1, 'Unidade é obrigatória'),
   type: z.string().min(1, 'Grupo é obrigatório'),
   brand: z.string().min(1, 'Marca é obrigatória').max(50),
   model: z.string().min(1, 'Modelo é obrigatório').max(50),
