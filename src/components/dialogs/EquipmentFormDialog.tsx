@@ -135,6 +135,21 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField control={form.control} name="ubsId" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Unidade</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Selecione a unidade" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {ubsList.map((u) => (
+                        <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="type" render={({ field }) => (
                   <FormItem>
