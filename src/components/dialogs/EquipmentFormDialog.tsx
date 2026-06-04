@@ -44,7 +44,7 @@ const equipmentFormSchema = z.object({
 type EquipmentFormData = z.infer<typeof equipmentFormSchema>;
 
 const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenChange, ubsId, editingEquipment }) => {
-  const { addEquipment, updateEquipment } = useInventory();
+  const { addEquipment, updateEquipment, ubsList } = useInventory();
   const [cityOpen, setCityOpen] = useState(false);
   const [showJustification, setShowJustification] = useState(false);
   const [justification, setJustification] = useState('');
@@ -53,6 +53,7 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
   const form = useForm<EquipmentFormData>({
     resolver: zodResolver(equipmentFormSchema),
     defaultValues: {
+      ubsId: editingEquipment?.ubsId || ubsId || '',
       type: editingEquipment?.type || '',
       brand: editingEquipment?.brand || '',
       model: editingEquipment?.model || '',
@@ -87,7 +88,7 @@ const EquipmentFormDialog: React.FC<EquipmentFormDialogProps> = ({ open, onOpenC
           serialNumber: data.serialNumber, patrimonyNumber: data.patrimonyNumber,
           location: data.location, municipality: data.municipality,
           conservationState: data.conservationState,
-          installationDate: data.installationDate, ubsId, observations: data.observations || '',
+          installationDate: data.installationDate, ubsId: data.ubsId, observations: data.observations || '',
           value: parsedValue,
         });
         toast.success('Equipamento cadastrado com sucesso!');
