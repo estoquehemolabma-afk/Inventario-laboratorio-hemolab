@@ -104,6 +104,52 @@ const RelatoriosPage: React.FC = () => {
     }
   };
 
+  const equipmentWithPatrimony = useMemo(
+    () => equipmentList
+      .filter(eq => (eq.patrimonyNumber || '').trim() !== '')
+      .sort((a, b) => a.patrimonyNumber.localeCompare(b.patrimonyNumber, 'pt-BR', { numeric: true })),
+    [equipmentList]
+  );
+
+  const handleGenerateEquipmentHistoryReport = async () => {
+    if (!selectedEquipmentId) { toast.error('Selecione um número de etiqueta'); return; }
+    const eq = equipmentList.find(e => e.id === selectedEquipmentId);
+    if (!eq) return;
+    const ubs = ubsList.find(u => u.id === eq.ubsId) || null;
+
+    setLoadingEquipmentHistory(true);
+    try {
+      const { data: logs, error } = await supabase
+        .from('equipment_status_logs')
+        .select('*')
+        .eq('equipment_id', eq.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+
+      const statusLogs: StatusLogEntry[] = (logs || []).map((log: any) => ({
+        equipmentType: getEquipmentTypeLabel(eq.type),
+        brand: eq.brand,
+        model: eq.model,
+        serialNumber: eq.serialNumber,
+        patrimonyNumber: eq.patrimonyNumber,
+        previousState: log.previous_state,
+        newState: log.new_state,
+        justification: log.justification,
+        date: new Date(log.created_at).toLocaleDateString('pt-BR'),
+        location: eq.location,
+      }));
+
+      generateEquipmentHistoryReport(eq, ubs, statusLogs);
+      toast.success('Relatório do equipamento gerado com sucesso!');
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao gerar relatório do equipamento');
+    } finally {
+      setLoadingEquipmentHistory(false);
+    }
+  };
+
+
   return (
     <MainLayout>
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
