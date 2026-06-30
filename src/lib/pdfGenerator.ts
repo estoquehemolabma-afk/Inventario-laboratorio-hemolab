@@ -245,3 +245,91 @@ export const generateStatusHistoryReport = (ubs: UBS, logs: StatusLogEntry[]) =>
 
   doc.save(`Historico_Status_${ubs.name.replace(/\s+/g, '_')}_${new Date().getFullYear()}.pdf`);
 };
+
+export const generateEquipmentHistoryReport = (
+  equipment: Equipment,
+  ubs: UBS | null,
+  logs: StatusLogEntry[]
+) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Header
+  doc.setFillColor(34, 72, 53);
+  doc.rect(0, 0, pageWidth, 35, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('HISTÓRICO DO EQUIPAMENTO', pageWidth / 2, 15, { align: 'center' });
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Relatório individual por número de etiqueta/patrimônio', pageWidth / 2, 25, { align: 'center' });
+
+  // Equipment info
+  doc.setTextColor(0, 0, 0);
+  doc.setFillColor(245, 247, 250);
+  doc.rect(14, 42, pageWidth - 28, 60, 'F');
+  doc.setFontSize(10);
+  const labelX = 20;
+  const valueX = 55;
+  let y = 50;
+  const line = (label: string, value: string) => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(label, labelX, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(value || '-', valueX, y);
+    y += 7;
+  };
+  line('Patrimônio:', equipment.patrimonyNumber);
+  line('Tipo:', getEquipmentTypeLabel(equipment.type));
+  line('Marca/Modelo:', `${equipment.brand} ${equipment.model}`.trim());
+  line('Nº Série:', equipment.serialNumber);
+  line('Unidade:', ubs?.name || '-');
+  line('Setor:', equipment.location);
+  line('Estado Atual:', conservationStateLabels[equipment.conservationState]);
+  line('Valor:', (equipment.value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+
+  const startY = 112;
+
+  if (logs.length === 0) {
+    doc.setFontSize(12);
+    doc.setTextColor(128, 128, 128);
+    doc.text('Nenhum registro de alteração de status para este equipamento.', pageWidth / 2, startY + 10, { align: 'center' });
+  } else {
+    const tableData = logs.map(log => [
+      log.date,
+      log.previousState,
+      log.newState,
+      log.justification,
+    ]);
+
+    autoTable(doc, {
+      startY,
+      head: [['Data', 'Estado Anterior', 'Novo Estado', 'Justificativa']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [34, 72, 53], textColor: [255, 255, 255], fontSize: 10, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 9, textColor: [0, 0, 0] },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 35 },
+        2: { cellWidth: 35 },
+        3: { cellWidth: 82 },
+      },
+      margin: { left: 14, right: 14 },
+    });
+  }
+
+  // Footer
+  const pageCount = doc.internal.pages.length - 1;
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    doc.text(`Página ${i} de ${pageCount} - Gerado em ${new Date().toLocaleString('pt-BR')}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+  }
+
+  const safeName = (equipment.patrimonyNumber || equipment.id).replace(/[^\w-]/g, '_');
+  doc.save(`Historico_Equipamento_${safeName}.pdf`);
+};
