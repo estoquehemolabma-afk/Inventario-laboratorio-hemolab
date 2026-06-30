@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Download, Building2, Activity, CheckCircle, XCircle, Package, History } from 'lucide-react';
+import { FileText, Download, Building2, Activity, CheckCircle, XCircle, Package, History, Tag } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useInventory } from '@/contexts/InventoryContext';
-import { generateUBSReport, generateStatusHistoryReport, StatusLogEntry } from '@/lib/pdfGenerator';
+import { generateUBSReport, generateStatusHistoryReport, generateEquipmentHistoryReport, StatusLogEntry } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
 import { getEquipmentTypeLabel } from '@/types/inventory';
 import { toast } from 'sonner';
@@ -14,7 +14,9 @@ const RelatoriosPage: React.FC = () => {
   const { ubsList, getEquipmentByUBS, equipmentList } = useInventory();
   const [selectedUBS, setSelectedUBS] = useState<string>('');
   const [selectedUBSHistory, setSelectedUBSHistory] = useState<string>('');
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>('');
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loadingEquipmentHistory, setLoadingEquipmentHistory] = useState(false);
 
   const groups = useMemo(() => {
     const types = new Set<string>();
