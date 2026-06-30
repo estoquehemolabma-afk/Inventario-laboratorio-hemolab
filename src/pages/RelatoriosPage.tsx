@@ -292,6 +292,55 @@ const RelatoriosPage: React.FC = () => {
               </Button>
             </div>
           </div>
+
+          {/* PDF Histórico por Equipamento (etiqueta) */}
+          <div className="bg-card rounded-xl shadow-card border border-border/50 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 gradient-sidebar rounded-xl"><Tag className="w-6 h-6 text-white" /></div>
+              <div>
+                <h2 className="font-display font-bold text-lg text-foreground">Histórico por Equipamento</h2>
+                <p className="text-sm text-muted-foreground">Selecione pelo número de etiqueta/patrimônio</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Número de Etiqueta</label>
+                <Select value={selectedEquipmentId} onValueChange={setSelectedEquipmentId}>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Selecione uma etiqueta" /></SelectTrigger>
+                  <SelectContent className="max-h-80">
+                    {equipmentWithPatrimony.length === 0 && (
+                      <div className="px-2 py-3 text-sm text-muted-foreground">Nenhum equipamento com etiqueta cadastrada</div>
+                    )}
+                    {equipmentWithPatrimony.map((eq) => (
+                      <SelectItem key={eq.id} value={eq.id}>
+                        <div className="flex items-center gap-2">
+                          <Tag className="w-4 h-4" />
+                          <span className="font-medium">{eq.patrimonyNumber}</span>
+                          <span className="text-muted-foreground">— {getEquipmentTypeLabel(eq.type)} {eq.brand}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {selectedEquipmentId && (() => {
+                const eq = equipmentList.find(e => e.id === selectedEquipmentId);
+                if (!eq) return null;
+                const ubs = ubsList.find(u => u.id === eq.ubsId);
+                return (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-muted rounded-lg p-4">
+                    <p className="text-sm text-muted-foreground mb-2">Prévia:</p>
+                    <p className="font-medium text-foreground">{eq.patrimonyNumber} — {getEquipmentTypeLabel(eq.type)}</p>
+                    <p className="text-sm text-muted-foreground">{eq.brand} {eq.model}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{ubs?.name || 'Unidade não definida'} • {eq.location}</p>
+                  </motion.div>
+                );
+              })()}
+              <Button onClick={handleGenerateEquipmentHistoryReport} disabled={!selectedEquipmentId || loadingEquipmentHistory} className="w-full gradient-sidebar text-white border-0">
+                <Download className="w-4 h-4 mr-2" /> {loadingEquipmentHistory ? 'Gerando...' : 'Gerar Histórico do Equipamento'}
+              </Button>
+            </div>
+          </div>
         </div>
       </motion.div>
     </MainLayout>
